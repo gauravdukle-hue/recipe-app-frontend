@@ -27,6 +27,20 @@ export default function VoiceRecorder({ onTranscript }) {
 
   return (
     <div style={styles.fullPageContainer}>
+      <svg style={styles.ruledPattern} width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <pattern id="ruledLines" x="0" y="0" width="100%" height="32" patternUnits="userSpaceOnUse">
+            <line x1="50" y1="31" x2="100%" y2="31" stroke="#d0d0d0" strokeWidth="1" />
+          </pattern>
+          <pattern id="marginLine" x="0" y="0" width="100%" height="100%" patternUnits="userSpaceOnUse">
+            <line x1="50" y1="0" x2="50" y2="100%" stroke="#e8e8e8" strokeWidth="2" />
+          </pattern>
+        </defs>
+        <rect width="100%" height="100%" fill="white" />
+        <rect width="100%" height="100%" fill="url(#ruledLines)" />
+        <rect width="100%" height="100%" fill="url(#marginLine)" />
+      </svg>
+
       <div style={styles.pageWrapper}>
         <textarea
           value={transcript}
@@ -93,6 +107,14 @@ const styles = {
     flexDirection: 'column',
     backgroundColor: '#fafafa'
   },
+  ruledPattern: {
+    position: 'absolute',
+    top: '20px',
+    left: '20px',
+    right: '20px',
+    bottom: '320px',
+    pointerEvents: 'none'
+  },
   pageWrapper: {
     flex: 1,
     backgroundColor: '#ffffff',
@@ -101,24 +123,8 @@ const styles = {
     boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
     padding: '40px 60px',
     overflow: 'hidden',
-    backgroundImage: `
-      repeating-linear-gradient(
-        0deg,
-        #f0f0f0 0px,
-        #f0f0f0 1px,
-        transparent 1px,
-        transparent 32px
-      ),
-      repeating-linear-gradient(
-        90deg,
-        transparent 0px,
-        transparent 49px,
-        #e8e8e8 49px,
-        #e8e8e8 50px
-      )
-    `,
-    backgroundSize: '100% 32px, 50px 100%',
-    backgroundPosition: '0 0, 0 0'
+    position: 'relative',
+    zIndex: 1
   },
   textarea: { 
     width: '100%', 
@@ -138,7 +144,9 @@ const styles = {
     borderTop: '1px solid #e5e5e5',
     padding: '20px',
     maxHeight: '300px',
-    overflowY: 'auto'
+    overflowY: 'auto',
+    position: 'relative',
+    zIndex: 2
   },
   photosGrid: {
     display: 'grid',
