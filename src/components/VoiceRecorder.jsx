@@ -96,8 +96,9 @@ export default function VoiceRecorder({ onTranscript }) {
 
 const styles = {
   container: {
-    width: '100%',
-    padding: '2rem 1rem',
+    width: '100vw',
+    marginLeft: 'calc(-50vw + 50%)',
+    padding: '2rem',
     display: 'flex',
     flexDirection: 'column',
     gap: '1rem'
@@ -107,7 +108,7 @@ const styles = {
     borderRadius: '16px',
     boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
     padding: '40px 60px',
-    height: '75vh',
+    height: '70vh',
     position: 'relative',
     overflow: 'hidden'
   },
@@ -137,7 +138,8 @@ const styles = {
   photosGrid: {
     display: 'grid',
     gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))',
-    gap: '1rem'
+    gap: '1rem',
+    padding: '0 2rem'
   },
   photoWrapper: {
     position: 'relative',
@@ -167,7 +169,8 @@ const styles = {
   },
   toolsBar: {
     display: 'flex',
-    gap: '1rem'
+    gap: '1rem',
+    padding: '0 2rem'
   },
   photoButton: {
     padding: '10px 16px',
