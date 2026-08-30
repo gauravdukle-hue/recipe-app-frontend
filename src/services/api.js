@@ -1,13 +1,11 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3000',
-  withCredentials: true
+  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3000'
 });
 
-// Add token to every request
 api.interceptors.request.use((config) => {
-  const token = getAuthToken();
+  const token = sessionStorage.getItem('auth_token');
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
@@ -26,10 +24,13 @@ export const getAuthToken = () => {
   return sessionStorage.getItem('auth_token');
 };
 
-export const loginUser = (email, password) => api.post('/auth/login', { email, password });
-export const signupUser = (email, password, name) => api.post('/auth/signup', { email, password, name });
+export const login = (email, password) => api.post('/auth/login', { email, password });
+export const signup = (email, password, name) => api.post('/auth/signup', { email, password, name });
 export const createRecipe = (title, description, cuisine_tag) => api.post('/recipes', { title, description, cuisine_tag });
 export const getRecipes = (view = 'all') => api.get('/recipes', { params: { view } });
+export const getRecipe = (id) => api.get(`/recipes/${id}`);
+export const loginUser = (email, password) => api.post('/auth/login', { email, password });
+export const signupUser = (email, password, name) => api.post('/auth/signup', { email, password, name });
 export const getRecipeDetail = (id) => api.get(`/recipes/${id}`);
 export const uploadPhoto = (recipe_id, photo_data, caption) => api.post(`/recipes/${recipe_id}/photos`, { photo_data, caption });
 
