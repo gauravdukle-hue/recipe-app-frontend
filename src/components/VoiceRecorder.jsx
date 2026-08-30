@@ -28,13 +28,13 @@ export default function VoiceRecorder({ onTranscript }) {
   return (
     <div style={styles.container}>
       <div style={styles.pageWrapper}>
-        <svg style={styles.ruledPattern} width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+        <svg style={styles.ruledPattern} xmlns="http://www.w3.org/2000/svg">
           <defs>
             <pattern id="ruledLines" x="0" y="0" width="100%" height="32" patternUnits="userSpaceOnUse">
-              <line x1="50" y1="31" x2="100%" y2="31" stroke="#d0d0d0" strokeWidth="1" />
+              <line x1="60" y1="31" x2="100%" y2="31" stroke="#d0d0d0" strokeWidth="1" />
             </pattern>
             <pattern id="marginLine" x="0" y="0" width="100%" height="100%" patternUnits="userSpaceOnUse">
-              <line x1="50" y1="0" x2="50" y2="100%" stroke="#e8e8e8" strokeWidth="2" />
+              <line x1="60" y1="0" x2="60" y2="100%" stroke="#e8e8e8" strokeWidth="2" />
             </pattern>
           </defs>
           <rect width="100%" height="100%" fill="white" />
@@ -97,18 +97,19 @@ export default function VoiceRecorder({ onTranscript }) {
 const styles = {
   container: {
     width: '100%',
-    maxWidth: '1000px',
-    margin: '0 auto'
+    padding: '2rem 1rem',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '1rem'
   },
   pageWrapper: {
     backgroundColor: '#ffffff',
     borderRadius: '16px',
     boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
     padding: '40px 60px',
-    minHeight: '600px',
+    height: '75vh',
     position: 'relative',
-    overflow: 'hidden',
-    marginBottom: '2rem'
+    overflow: 'hidden'
   },
   ruledPattern: {
     position: 'absolute',
@@ -120,9 +121,9 @@ const styles = {
   },
   textarea: { 
     width: '100%', 
-    minHeight: '550px',
+    height: '100%',
     padding: '0',
-    fontSize: '16px', 
+    fontSize: '17px', 
     border: 'none',
     outline: 'none',
     fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif', 
@@ -136,8 +137,7 @@ const styles = {
   photosGrid: {
     display: 'grid',
     gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))',
-    gap: '1rem',
-    marginBottom: '1rem'
+    gap: '1rem'
   },
   photoWrapper: {
     position: 'relative',
@@ -163,9 +163,6 @@ const styles = {
     borderRadius: '50%',
     cursor: 'pointer',
     fontSize: '16px',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
     transition: 'all 0.2s'
   },
   toolsBar: {
