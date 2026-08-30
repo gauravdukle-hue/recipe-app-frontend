@@ -42,11 +42,8 @@ export default function VoiceRecorder({ onTranscript }) {
           </defs>
           <rect width="100%" height="100%" fill="white" />
           <rect width="100%" height="160" fill="url(#blankLines)" />
-          {/* First bold blue line */}
           <line x1="60" y1="191" x2="100%" y2="191" stroke="#007AFF" strokeWidth="3" />
-          {/* Rest of ruled lines */}
           <rect y="192" width="100%" height="1000" fill="url(#ruledLines)" />
-          {/* Margin line */}
           <rect width="100%" height="100%" fill="url(#marginLine)" />
         </svg>
 
@@ -129,7 +126,7 @@ const styles = {
     width: '100%', 
     height: '100%',
     padding: '160px 0 0 0',
-    fontSize: '16px', 
+    fontSize: '20px',
     border: 'none',
     outline: 'none',
     fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif', 
@@ -139,7 +136,9 @@ const styles = {
     color: '#1d1d1d',
     position: 'relative',
     zIndex: 1,
-    boxSizing: 'border-box'
+    boxSizing: 'border-box',
+    WebkitAppearance: 'none',
+    WebkitTextSizeAdjust: '100%'
   },
   photosGrid: {
     display: 'grid',
