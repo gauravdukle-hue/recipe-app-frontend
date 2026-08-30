@@ -67,7 +67,7 @@ export default function RecipeForm({ onRecipeCreated, onCancel }) {
     try {
       // Upload photos
       for (const photo of photos) {
-        await fetch(`http://192.168.1.206:3000/recipes/${result.recipe_id}/photos`, {
+        await fetch(`https://recipe-app-backend-production-030e.up.railway.app/recipes/${result.recipe_id}/photos`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
