@@ -24,14 +24,23 @@ export const getAuthToken = () => {
   return sessionStorage.getItem('auth_token');
 };
 
+// Auth functions
 export const login = (email, password) => api.post('/auth/login', { email, password });
 export const signup = (email, password, name) => api.post('/auth/signup', { email, password, name });
+export const loginUser = (email, password) => api.post('/auth/login', { email, password });
+export const signupUser = (email, password, name) => api.post('/auth/signup', { email, password, name });
+
+// Recipe functions
 export const createRecipe = (title, description, cuisine_tag) => api.post('/recipes', { title, description, cuisine_tag });
 export const getRecipes = (view = 'all') => api.get('/recipes', { params: { view } });
 export const getRecipe = (id) => api.get(`/recipes/${id}`);
-export const loginUser = (email, password) => api.post('/auth/login', { email, password });
-export const signupUser = (email, password, name) => api.post('/auth/signup', { email, password, name });
 export const getRecipeDetail = (id) => api.get(`/recipes/${id}`);
-export const uploadPhoto = (recipe_id, photo_data, caption) => api.post(`/recipes/${recipe_id}/photos`, { photo_data, caption });
+export const updateRecipe = (id, data) => api.put(`/recipes/${id}`, data);
+export const deleteRecipe = (id) => api.delete(`/recipes/${id}`);
+
+// Photo functions
+export const uploadPhoto = (recipe_id, photo_data, caption) => 
+  api.post(`/recipes/${recipe_id}/photos`, { photo_data, caption });
+export const getPhotos = (recipe_id) => api.get(`/recipes/${recipe_id}/photos`);
 
 export default api;
