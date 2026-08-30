@@ -124,7 +124,7 @@ const styles = {
   textarea: { 
     width: '100%', 
     height: '100%',
-    padding: '0',
+    padding: '160px 0 0 0',
     fontSize: '16px', 
     border: 'none',
     outline: 'none',
@@ -134,7 +134,8 @@ const styles = {
     backgroundColor: 'transparent',
     color: '#1d1d1d',
     position: 'relative',
-    zIndex: 1
+    zIndex: 1,
+    boxSizing: 'border-box'
   },
   photosGrid: {
     display: 'grid',
