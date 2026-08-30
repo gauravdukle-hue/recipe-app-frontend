@@ -90,7 +90,7 @@ export default function VoiceRecorder({ onTranscript }) {
           onChange={(e) => setTranscript(e.target.value)}
           placeholder="Describe your recipe..."
           style={styles.textarea}
-          rows={8}
+          rows={12}
         />
         <button onClick={handleSubmit} disabled={!transcript.trim()} style={styles.submitButton}>
           Parse Recipe with AI
@@ -107,7 +107,7 @@ export default function VoiceRecorder({ onTranscript }) {
       <h2 style={styles.title}>🎤 Describe Your Recipe</h2>
 
       <div style={styles.languageSelector}>
-        <label>Language:</label>
+        <label style={styles.labelText}>Language:</label>
         <select 
           value={language} 
           onChange={(e) => setLanguage(e.target.value)}
@@ -141,7 +141,7 @@ export default function VoiceRecorder({ onTranscript }) {
 
       {transcript && (
         <div style={styles.transcriptBox}>
-          <h3>Your Recipe:</h3>
+          <h3 style={styles.transcriptTitle}>Your Recipe:</h3>
           <p style={styles.transcript}>{transcript}</p>
         </div>
       )}
@@ -156,16 +156,18 @@ export default function VoiceRecorder({ onTranscript }) {
 }
 
 const styles = {
-  container: { padding: '2rem', maxWidth: '600px', margin: '0 auto' },
-  title: { fontSize: '24px', marginBottom: '1.5rem', color: '#2c3e50' },
-  languageSelector: { marginBottom: '1.5rem' },
-  selectInput: { width: '100%', padding: '10px', marginTop: '0.5rem', borderRadius: '4px', border: '1px solid #bdc3c7' },
-  recordButton: { width: '100%', padding: '20px', fontSize: '18px', fontWeight: 'bold', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', marginBottom: '1rem' },
-  typeButton: { width: '100%', padding: '12px', fontSize: '16px', backgroundColor: '#95a5a6', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', marginBottom: '1rem' },
-  listening: { textAlign: 'center', color: '#e74c3c', fontWeight: 'bold', marginBottom: '1rem' },
-  transcriptBox: { backgroundColor: '#ecf0f1', padding: '1.5rem', borderRadius: '8px', marginTop: '1rem', marginBottom: '1rem' },
-  transcript: { fontSize: '16px', lineHeight: '1.6', color: '#2c3e50', marginBottom: '1rem' },
-  submitButton: { width: '100%', padding: '15px', backgroundColor: '#27ae60', color: 'white', fontSize: '16px', fontWeight: 'bold', border: 'none', borderRadius: '8px', cursor: 'pointer' },
-  backButton: { width: '100%', padding: '12px', backgroundColor: '#95a5a6', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', marginTop: '1rem' },
-  textarea: { width: '100%', padding: '12px', fontSize: '16px', border: '1px solid #bdc3c7', borderRadius: '4px', boxSizing: 'border-box', fontFamily: 'inherit' }
+  container: { padding: '2rem', maxWidth: '100%', margin: '0 auto' },
+  title: { fontSize: '28px', marginBottom: '2rem', color: '#2c3e50' },
+  languageSelector: { marginBottom: '2rem' },
+  labelText: { fontSize: '18px', display: 'block', marginBottom: '0.8rem', fontWeight: 'bold' },
+  selectInput: { width: '100%', padding: '16px', marginTop: '0.5rem', borderRadius: '8px', border: '2px solid #bdc3c7', fontSize: '18px' },
+  recordButton: { width: '100%', padding: '24px', fontSize: '22px', fontWeight: 'bold', color: 'white', border: 'none', borderRadius: '12px', cursor: 'pointer', marginBottom: '1rem', minHeight: '70px' },
+  typeButton: { width: '100%', padding: '18px', fontSize: '18px', backgroundColor: '#95a5a6', color: 'white', border: 'none', borderRadius: '12px', cursor: 'pointer', marginBottom: '1rem' },
+  listening: { textAlign: 'center', color: '#e74c3c', fontWeight: 'bold', marginBottom: '1rem', fontSize: '18px' },
+  transcriptBox: { backgroundColor: '#ecf0f1', padding: '2rem', borderRadius: '12px', marginTop: '1.5rem', marginBottom: '1.5rem' },
+  transcriptTitle: { fontSize: '20px', color: '#2c3e50', marginBottom: '1rem' },
+  transcript: { fontSize: '18px', lineHeight: '1.8', color: '#2c3e50', marginBottom: '1rem' },
+  submitButton: { width: '100%', padding: '18px', backgroundColor: '#27ae60', color: 'white', fontSize: '18px', fontWeight: 'bold', border: 'none', borderRadius: '12px', cursor: 'pointer', minHeight: '60px' },
+  backButton: { width: '100%', padding: '16px', backgroundColor: '#95a5a6', color: 'white', border: 'none', borderRadius: '12px', cursor: 'pointer', marginTop: '1rem', fontSize: '18px' },
+  textarea: { width: '100%', padding: '16px', fontSize: '18px', border: '2px solid #bdc3c7', borderRadius: '8px', boxSizing: 'border-box', fontFamily: 'inherit', lineHeight: '1.8' }
 };
