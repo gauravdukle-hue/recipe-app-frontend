@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { createRecipe, setAuthToken } from '../services/api';
+import { createRecipe } from '../services/api';
 import VoiceRecorder from './VoiceRecorder';
 import PhotoUpload from './PhotoUpload';
 
@@ -8,7 +8,6 @@ export default function RecipeForm({ onBack }) {
   const [description, setDescription] = useState('');
   const [title, setTitle] = useState('');
   const [cuisine, setCuisine] = useState('');
-  const [parsedRecipe, setParsedRecipe] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [recipeId, setRecipeId] = useState(null);
@@ -30,7 +29,6 @@ export default function RecipeForm({ onBack }) {
     try {
       const response = await createRecipe(title, description, cuisine);
       setRecipeId(response.data.recipe_id);
-      setParsedRecipe(true);
       setStep(4);
     } catch (err) {
       setError(err.response?.data?.error || 'Failed to create recipe');
@@ -48,10 +46,7 @@ export default function RecipeForm({ onBack }) {
       <button onClick={onBack} style={styles.backButton}>← Back</button>
 
       {step === 1 && (
-        <div style={styles.card}>
-          <h2 style={styles.stepTitle}>Describe Your Recipe</h2>
-          <VoiceRecorder onTranscript={handleTranscript} />
-        </div>
+        <VoiceRecorder onTranscript={handleTranscript} />
       )}
 
       {step === 2 && (
@@ -93,7 +88,6 @@ export default function RecipeForm({ onBack }) {
       {step === 4 && recipeId && (
         <div style={styles.card}>
           <h2 style={styles.stepTitle}>Add Photos</h2>
-          <p style={styles.subtitle}>Add up to 5 photos of your dish</p>
           <PhotoUpload recipeId={recipeId} onSuccess={handleSuccess} />
         </div>
       )}
@@ -102,14 +96,13 @@ export default function RecipeForm({ onBack }) {
 }
 
 const styles = {
-  container: { maxWidth: '600px', margin: '0 auto', padding: '2rem' },
-  backButton: { padding: '8px 12px', backgroundColor: '#e5e5e5', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '15px', marginBottom: '2rem', transition: 'all 0.2s' },
+  container: { maxWidth: '900px', margin: '0 auto', padding: '2rem' },
+  backButton: { padding: '8px 12px', backgroundColor: '#e5e5e5', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '15px', marginBottom: '2rem' },
   card: { backgroundColor: 'white', borderRadius: '16px', padding: '2rem', boxShadow: '0 2px 10px rgba(0,0,0,0.08)' },
   stepTitle: { fontSize: '24px', fontWeight: '700', color: '#1d1d1d', margin: '0 0 0.5rem 0' },
-  subtitle: { fontSize: '14px', color: '#999', margin: '0 0 2rem 0' },
-  input: { width: '100%', padding: '12px 14px', border: '1px solid #e5e5e5', borderRadius: '10px', fontSize: '15px', fontFamily: 'inherit', marginBottom: '1rem', boxSizing: 'border-box', transition: 'all 0.2s', outline: 'none', backgroundColor: '#fafafa' },
-  error: { backgroundColor: '#ffebee', color: '#c62828', padding: '10px 14px', borderRadius: '8px', fontSize: '14px', marginBottom: '1rem', border: '1px solid #ffcdd2' },
+  input: { width: '100%', padding: '12px 14px', border: '1px solid #e5e5e5', borderRadius: '10px', fontSize: '15px', fontFamily: 'inherit', marginBottom: '1rem', boxSizing: 'border-box' },
+  error: { backgroundColor: '#ffebee', color: '#c62828', padding: '10px 14px', borderRadius: '8px', fontSize: '14px', marginBottom: '1rem' },
   buttonGroup: { display: 'flex', gap: '1rem', marginTop: '2rem' },
-  primaryButton: { flex: 1, padding: '12px', backgroundColor: '#007AFF', color: 'white', border: 'none', borderRadius: '10px', fontSize: '15px', fontWeight: '600', cursor: 'pointer', transition: 'all 0.2s' },
-  secondaryButton: { flex: 1, padding: '12px', backgroundColor: '#e5e5e5', color: '#1d1d1d', border: 'none', borderRadius: '10px', fontSize: '15px', fontWeight: '600', cursor: 'pointer', transition: 'all 0.2s' }
+  primaryButton: { flex: 1, padding: '12px', backgroundColor: '#007AFF', color: 'white', border: 'none', borderRadius: '10px', fontSize: '15px', fontWeight: '600', cursor: 'pointer' },
+  secondaryButton: { flex: 1, padding: '12px', backgroundColor: '#e5e5e5', color: '#1d1d1d', border: 'none', borderRadius: '10px', fontSize: '15px', fontWeight: '600', cursor: 'pointer' }
 };

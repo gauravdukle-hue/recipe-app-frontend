@@ -41,8 +41,8 @@ export default function VoiceRecorder({ onTranscript }) {
             </pattern>
           </defs>
           <rect width="100%" height="100%" fill="white" />
-          <rect width="100%" height="160px" fill="url(#blankLines)" />
-          <rect y="160px" width="100%" height="calc(100% - 160px)" fill="url(#ruledLines)" />
+          <rect width="100%" height="160" fill="url(#blankLines)" />
+          <rect y="160" width="100%" height="1000" fill="url(#ruledLines)" />
           <rect width="100%" height="100%" fill="url(#marginLine)" />
         </svg>
 
