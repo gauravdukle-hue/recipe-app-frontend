@@ -42,7 +42,11 @@ export default function VoiceRecorder({ onTranscript }) {
           </defs>
           <rect width="100%" height="100%" fill="white" />
           <rect width="100%" height="160" fill="url(#blankLines)" />
-          <rect y="160" width="100%" height="1000" fill="url(#ruledLines)" />
+          {/* First bold blue line */}
+          <line x1="60" y1="191" x2="100%" y2="191" stroke="#007AFF" strokeWidth="3" />
+          {/* Rest of ruled lines */}
+          <rect y="192" width="100%" height="1000" fill="url(#ruledLines)" />
+          {/* Margin line */}
           <rect width="100%" height="100%" fill="url(#marginLine)" />
         </svg>
 
