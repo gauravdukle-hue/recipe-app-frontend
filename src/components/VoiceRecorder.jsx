@@ -26,7 +26,7 @@ export default function VoiceRecorder({ onTranscript }) {
   };
 
   return (
-    <>
+    <div style={styles.container}>
       <div style={styles.pageWrapper}>
         <svg style={styles.ruledPattern} xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
           <defs>
@@ -94,21 +94,24 @@ export default function VoiceRecorder({ onTranscript }) {
           Save
         </button>
       </div>
-    </>
+    </div>
   );
 }
 
 const styles = {
+  container: {
+    maxWidth: '900px',
+    margin: '0 auto',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '0'
+  },
   pageWrapper: {
-    width: '100%',
     backgroundColor: '#ffffff',
-    borderRadius: '0',
     padding: '40px 60px',
-    height: '75vh',
+    height: '70vh',
     position: 'relative',
-    overflow: 'hidden',
-    margin: '0',
-    boxShadow: 'none'
+    overflow: 'hidden'
   },
   ruledPattern: {
     position: 'absolute',
