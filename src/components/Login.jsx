@@ -1,67 +1,61 @@
 import { useState } from 'react';
 import { login, signup, setAuthToken } from '../services/api';
 
-export default function Login({ onLoginSuccess }) {
+export default function Login({ onLogin }) {
   const [isSignup, setIsSignup] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
+  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError('');
     setLoading(true);
 
     try {
-      let res;
+      let response;
       if (isSignup) {
-        res = await signup(email, password, name);
+        response = await signup(email, password, name);
       } else {
-        res = await login(email, password);
-      }
-
-      setAuthToken(res.data.auth_token);
-      onLoginSuccess(res.data);
-    } catch (error) {
-      console.error('Full error:', error);
-      console.error('Error response:', error.response);
-      
-      let errorMsg = 'Unknown error occurred';
-      
-      if (error.response?.data?.details) {
-        errorMsg = error.response.data.details;
-      } else if (error.response?.data?.error) {
-        errorMsg = error.response.data.error;
-      } else if (error.message) {
-        errorMsg = error.message;
+        response = await login(email, password);
       }
       
-      alert('Error: ' + errorMsg);
+      setAuthToken(response.data.token);
+      onLogin();
+    } catch (err) {
+      setError(err.response?.data?.error || 'Something went wrong');
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   return (
     <div style={styles.container}>
       <div style={styles.card}>
-        <h1 style={styles.title}>🍽️ Family Recipe App</h1>
+        <div style={styles.header}>
+          <h1 style={styles.title}>🍽️</h1>
+          <h2 style={styles.heading}>Family Recipes</h2>
+          <p style={styles.subtitle}>
+            {isSignup ? 'Create your account' : 'Welcome back'}
+          </p>
+        </div>
+
+        {error && <div style={styles.error}>{error}</div>}
 
         <form onSubmit={handleSubmit} style={styles.form}>
-          <h2 style={styles.formTitle}>
-            {isSignup ? 'Create Account' : 'Login'}
-          </h2>
-
           {isSignup && (
             <input
               type="text"
-              placeholder="Full Name"
+              placeholder="Full name"
               value={name}
               onChange={(e) => setName(e.target.value)}
               style={styles.input}
               required
             />
           )}
-
+          
           <input
             type="email"
             placeholder="Email"
@@ -80,20 +74,30 @@ export default function Login({ onLoginSuccess }) {
             required
           />
 
-          <button type="submit" disabled={loading} style={styles.submitButton}>
-            {loading ? 'Loading...' : isSignup ? 'Sign Up' : 'Login'}
+          <button
+            type="submit"
+            disabled={loading}
+            style={{
+              ...styles.button,
+              opacity: loading ? 0.7 : 1,
+              cursor: loading ? 'not-allowed' : 'pointer'
+            }}
+          >
+            {loading ? 'Loading...' : isSignup ? 'Create Account' : 'Sign In'}
           </button>
         </form>
 
-        <p style={styles.toggle}>
-          {isSignup ? 'Already have an account?' : "Don't have an account?"}
-          <button
-            onClick={() => setIsSignup(!isSignup)}
-            style={styles.toggleButton}
-          >
-            {isSignup ? 'Login' : 'Sign Up'}
-          </button>
-        </p>
+        <div style={styles.toggle}>
+          <p style={styles.toggleText}>
+            {isSignup ? 'Already have an account?' : "Don't have an account?"}
+            <button
+              onClick={() => setIsSignup(!isSignup)}
+              style={styles.toggleButton}
+            >
+              {isSignup ? 'Sign In' : 'Sign Up'}
+            </button>
+          </p>
+        </div>
       </div>
     </div>
   );
@@ -101,61 +105,94 @@ export default function Login({ onLoginSuccess }) {
 
 const styles = {
   container: {
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
     minHeight: '100vh',
-    backgroundColor: '#ecf0f1'
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#fafafa',
+    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+    padding: '2rem'
   },
   card: {
     backgroundColor: 'white',
-    padding: '2rem',
-    borderRadius: '8px',
-    boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+    borderRadius: '20px',
+    padding: '3rem 2rem',
     width: '100%',
-    maxWidth: '400px'
+    maxWidth: '400px',
+    boxShadow: '0 2px 10px rgba(0,0,0,0.08)',
+  },
+  header: {
+    textAlign: 'center',
+    marginBottom: '2rem'
   },
   title: {
-    textAlign: 'center',
-    color: '#2c3e50',
-    marginBottom: '2rem'
+    fontSize: '48px',
+    margin: '0 0 1rem 0'
+  },
+  heading: {
+    fontSize: '24px',
+    fontWeight: '700',
+    color: '#1d1d1d',
+    margin: '0 0 0.5rem 0'
+  },
+  subtitle: {
+    fontSize: '14px',
+    color: '#999',
+    margin: 0
   },
   form: {
     display: 'flex',
-    flexDirection: 'column'
-  },
-  formTitle: {
-    marginBottom: '1rem',
-    color: '#2c3e50'
+    flexDirection: 'column',
+    gap: '1rem',
+    marginBottom: '1.5rem'
   },
   input: {
-    padding: '12px',
-    marginBottom: '1rem',
-    fontSize: '16px',
-    border: '1px solid #bdc3c7',
-    borderRadius: '4px'
+    padding: '12px 14px',
+    border: '1px solid #e5e5e5',
+    borderRadius: '10px',
+    fontSize: '15px',
+    fontFamily: 'inherit',
+    transition: 'all 0.2s',
+    outline: 'none',
+    backgroundColor: '#fafafa'
   },
-  submitButton: {
+  button: {
     padding: '12px',
-    fontSize: '16px',
-    fontWeight: 'bold',
-    backgroundColor: '#3498db',
+    backgroundColor: '#007AFF',
     color: 'white',
     border: 'none',
-    borderRadius: '4px',
-    cursor: 'pointer'
+    borderRadius: '10px',
+    fontSize: '15px',
+    fontWeight: '600',
+    cursor: 'pointer',
+    transition: 'all 0.2s',
+    marginTop: '0.5rem'
+  },
+  error: {
+    backgroundColor: '#ffebee',
+    color: '#c62828',
+    padding: '10px 14px',
+    borderRadius: '8px',
+    fontSize: '14px',
+    marginBottom: '1rem',
+    border: '1px solid #ffcdd2'
   },
   toggle: {
-    textAlign: 'center',
-    marginTop: '1rem',
-    fontSize: '14px'
+    textAlign: 'center'
+  },
+  toggleText: {
+    fontSize: '14px',
+    color: '#666',
+    margin: 0
   },
   toggleButton: {
     background: 'none',
     border: 'none',
-    color: '#3498db',
+    color: '#007AFF',
+    fontWeight: '600',
     cursor: 'pointer',
     marginLeft: '0.5rem',
-    textDecoration: 'underline'
+    fontSize: '14px',
+    transition: 'opacity 0.2s'
   }
 };
