@@ -9,15 +9,18 @@ import './App.css';
 export default function App() {
   const [screen, setScreen] = useState('library');
   const [selectedRecipeId, setSelectedRecipeId] = useState(null);
-  const [isLoggedIn, setIsLoggedIn] = useState(!!getAuthToken());
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!getAuthToken()) {
-      setIsLoggedIn(false);
-      setScreen('library');
-    } else {
+    // Check if token exists in localStorage on mount
+    const token = localStorage.getItem('auth_token');
+    if (token) {
       setIsLoggedIn(true);
+    } else {
+      setIsLoggedIn(false);
     }
+    setLoading(false);
   }, []);
 
   const handleLogin = () => {
@@ -26,7 +29,7 @@ export default function App() {
   };
 
   const handleLogout = () => {
-    sessionStorage.removeItem('auth_token');
+    localStorage.removeItem('auth_token');
     setAuthToken(null);
     setIsLoggedIn(false);
     setScreen('library');
@@ -36,6 +39,8 @@ export default function App() {
     setSelectedRecipeId(recipeId);
     setScreen('detail');
   };
+
+  if (loading) return <div style={{ padding: '2rem', textAlign: 'center' }}>Loading...</div>;
 
   if (!isLoggedIn) {
     return <Login onLogin={handleLogin} />;
