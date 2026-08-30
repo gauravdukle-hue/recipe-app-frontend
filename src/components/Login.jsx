@@ -22,10 +22,15 @@ export default function Login({ onLogin }) {
         response = await login(email, password);
       }
       
-      setAuthToken(response.data.token);
+      const token = response.data.token;
+      console.log('Token received:', token ? 'yes' : 'no');
+      setAuthToken(token);
+      localStorage.setItem('auth_token', token);
+      
       onLogin();
     } catch (err) {
       setError(err.response?.data?.error || 'Something went wrong');
+      console.error('Login error:', err);
     } finally {
       setLoading(false);
     }
