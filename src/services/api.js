@@ -5,7 +5,7 @@ const api = axios.create({
 });
 
 api.interceptors.request.use((config) => {
-  const token = sessionStorage.getItem('auth_token');
+  const token = localStorage.getItem('auth_token');
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
@@ -14,14 +14,14 @@ api.interceptors.request.use((config) => {
 
 export const setAuthToken = (token) => {
   if (token) {
-    sessionStorage.setItem('auth_token', token);
+    localStorage.setItem('auth_token', token);
   } else {
-    sessionStorage.removeItem('auth_token');
+    localStorage.removeItem('auth_token');
   }
 };
 
 export const getAuthToken = () => {
-  return sessionStorage.getItem('auth_token');
+  return localStorage.getItem('auth_token');
 };
 
 export const login = (email, password) => api.post('/auth/login', { email, password });
