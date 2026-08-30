@@ -26,78 +26,88 @@ export default function VoiceRecorder({ onTranscript }) {
   };
 
   return (
-    <div style={styles.container}>
+    <div style={styles.fullPageContainer}>
       <div style={styles.pageWrapper}>
         <textarea
           value={transcript}
           onChange={(e) => setTranscript(e.target.value)}
-          placeholder="Describe your recipe here... Include ingredients, steps, cooking time, etc."
+          placeholder="Describe your recipe here..."
           style={styles.textarea}
         />
       </div>
 
-      {photos.length > 0 && (
-        <div style={styles.photosGrid}>
-          {photos.map((photo, idx) => (
-            <div key={idx} style={styles.photoWrapper}>
-              <img src={photo} alt={`preview-${idx}`} style={styles.photoThumb} />
-              <button
-                onClick={() => handleRemovePhoto(idx)}
-                style={styles.removePhotoBtn}
-              >
-                ✕
-              </button>
-            </div>
-          ))}
+      <div style={styles.bottomPanel}>
+        {photos.length > 0 && (
+          <div style={styles.photosGrid}>
+            {photos.map((photo, idx) => (
+              <div key={idx} style={styles.photoWrapper}>
+                <img src={photo} alt={`preview-${idx}`} style={styles.photoThumb} />
+                <button
+                  onClick={() => handleRemovePhoto(idx)}
+                  style={styles.removePhotoBtn}
+                >
+                  ✕
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+
+        <div style={styles.toolsBar}>
+          <label style={styles.photoButton}>
+            📷 Add Photo
+            <input
+              type="file"
+              multiple
+              accept="image/*"
+              onChange={handlePhotoAdd}
+              style={{ display: 'none' }}
+            />
+          </label>
+          
+          <button 
+            onClick={handleSubmit} 
+            disabled={!transcript.trim()} 
+            style={{
+              ...styles.submitButton,
+              opacity: transcript.trim() ? 1 : 0.5,
+              cursor: transcript.trim() ? 'pointer' : 'not-allowed'
+            }}
+          >
+            Continue →
+          </button>
         </div>
-      )}
-
-      <div style={styles.toolsBar}>
-        <label style={styles.photoButton}>
-          📷 Add Photo
-          <input
-            type="file"
-            multiple
-            accept="image/*"
-            onChange={handlePhotoAdd}
-            style={{ display: 'none' }}
-          />
-        </label>
       </div>
-
-      <button 
-        onClick={handleSubmit} 
-        disabled={!transcript.trim()} 
-        style={{
-          ...styles.submitButton,
-          opacity: transcript.trim() ? 1 : 0.5,
-          cursor: transcript.trim() ? 'pointer' : 'not-allowed'
-        }}
-      >
-        Continue →
-      </button>
     </div>
   );
 }
 
 const styles = {
-  container: { 
-    width: '100%',
-    maxWidth: '900px',
-    margin: '0 auto'
+  fullPageContainer: {
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    display: 'flex',
+    flexDirection: 'column',
+    backgroundColor: '#fafafa'
   },
   pageWrapper: {
+    flex: 1,
     backgroundColor: '#ffffff',
+    margin: '20px',
     borderRadius: '16px',
     boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
-    padding: '40px 50px',
+    padding: '40px 60px',
+    overflow: 'hidden',
     backgroundImage: `
       repeating-linear-gradient(
         0deg,
         #f0f0f0 0px,
         #f0f0f0 1px,
         transparent 1px,
-        transparent 28px
+        transparent 32px
       ),
       repeating-linear-gradient(
         90deg,
@@ -107,29 +117,34 @@ const styles = {
         #e8e8e8 50px
       )
     `,
-    backgroundSize: '100% 28px, 50px 100%',
-    backgroundPosition: '0 0, 0 0',
-    minHeight: '600px'
+    backgroundSize: '100% 32px, 50px 100%',
+    backgroundPosition: '0 0, 0 0'
   },
   textarea: { 
     width: '100%', 
-    height: '550px',
+    height: '100%',
     padding: '0',
     fontSize: '16px', 
     border: 'none',
     outline: 'none',
     fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif', 
-    lineHeight: '28px',
+    lineHeight: '32px',
     resize: 'none',
     backgroundColor: 'transparent',
     color: '#1d1d1d'
   },
+  bottomPanel: {
+    backgroundColor: '#ffffff',
+    borderTop: '1px solid #e5e5e5',
+    padding: '20px',
+    maxHeight: '300px',
+    overflowY: 'auto'
+  },
   photosGrid: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))',
+    gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))',
     gap: '1rem',
-    marginTop: '2rem',
-    marginBottom: '1.5rem'
+    marginBottom: '1rem'
   },
   photoWrapper: {
     position: 'relative',
@@ -138,7 +153,7 @@ const styles = {
   },
   photoThumb: {
     width: '100%',
-    height: '120px',
+    height: '100px',
     objectFit: 'cover',
     borderRadius: '12px',
     border: '1px solid #e5e5e5'
@@ -162,9 +177,7 @@ const styles = {
   },
   toolsBar: {
     display: 'flex',
-    gap: '1rem',
-    marginTop: '2rem',
-    marginBottom: '1.5rem'
+    gap: '1rem'
   },
   photoButton: {
     padding: '10px 16px',
@@ -181,14 +194,14 @@ const styles = {
     gap: '6px'
   },
   submitButton: { 
-    width: '100%', 
-    padding: '14px', 
+    flex: 1,
+    padding: '10px 16px', 
     backgroundColor: '#007AFF', 
     color: 'white', 
-    fontSize: '16px', 
+    fontSize: '15px', 
     fontWeight: '600', 
     border: 'none', 
-    borderRadius: '12px', 
+    borderRadius: '10px', 
     transition: 'all 0.2s',
     cursor: 'pointer'
   }
