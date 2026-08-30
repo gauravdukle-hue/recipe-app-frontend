@@ -26,26 +26,30 @@ export default function VoiceRecorder({ onTranscript }) {
   };
 
   return (
-    <div style={styles.container}>
+    <>
       <div style={styles.pageWrapper}>
-        <svg style={styles.ruledPattern} xmlns="http://www.w3.org/2000/svg">
+        <svg style={styles.ruledPattern} xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
           <defs>
+            <pattern id="blankLines" x="0" y="0" width="100%" height="32" patternUnits="userSpaceOnUse">
+              <line x1="60" y1="31" x2="100%" y2="31" stroke="transparent" strokeWidth="1" />
+            </pattern>
             <pattern id="ruledLines" x="0" y="0" width="100%" height="32" patternUnits="userSpaceOnUse">
               <line x1="60" y1="31" x2="100%" y2="31" stroke="#d0d0d0" strokeWidth="1" />
             </pattern>
             <pattern id="marginLine" x="0" y="0" width="100%" height="100%" patternUnits="userSpaceOnUse">
-              <line x1="60" y1="0" x2="60" y2="100%" stroke="#e8e8e8" strokeWidth="2" />
+              <line x1="50" y1="0" x2="50" y2="100%" stroke="#ff9999" strokeWidth="2" />
             </pattern>
           </defs>
           <rect width="100%" height="100%" fill="white" />
-          <rect width="100%" height="100%" fill="url(#ruledLines)" />
+          <rect width="100%" height="160px" fill="url(#blankLines)" />
+          <rect y="160px" width="100%" height="calc(100% - 160px)" fill="url(#ruledLines)" />
           <rect width="100%" height="100%" fill="url(#marginLine)" />
         </svg>
 
         <textarea
           value={transcript}
           onChange={(e) => setTranscript(e.target.value)}
-          placeholder="Describe your recipe here..."
+          placeholder=""
           style={styles.textarea}
         />
       </div>
@@ -68,7 +72,7 @@ export default function VoiceRecorder({ onTranscript }) {
 
       <div style={styles.toolsBar}>
         <label style={styles.photoButton}>
-          📷 Add Photo
+          📷
           <input
             type="file"
             multiple
@@ -87,30 +91,24 @@ export default function VoiceRecorder({ onTranscript }) {
             cursor: transcript.trim() ? 'pointer' : 'not-allowed'
           }}
         >
-          Continue →
+          Save
         </button>
       </div>
-    </div>
+    </>
   );
 }
 
 const styles = {
-  container: {
-    width: '100vw',
-    marginLeft: 'calc(-50vw + 50%)',
-    padding: '2rem',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '1rem'
-  },
   pageWrapper: {
+    width: '100%',
     backgroundColor: '#ffffff',
-    borderRadius: '16px',
-    boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+    borderRadius: '0',
     padding: '40px 60px',
-    height: '70vh',
+    height: '75vh',
     position: 'relative',
-    overflow: 'hidden'
+    overflow: 'hidden',
+    margin: '0',
+    boxShadow: 'none'
   },
   ruledPattern: {
     position: 'absolute',
@@ -124,7 +122,7 @@ const styles = {
     width: '100%', 
     height: '100%',
     padding: '0',
-    fontSize: '17px', 
+    fontSize: '16px', 
     border: 'none',
     outline: 'none',
     fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif', 
@@ -137,64 +135,65 @@ const styles = {
   },
   photosGrid: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))',
-    gap: '1rem',
-    padding: '0 2rem'
+    gridTemplateColumns: 'repeat(auto-fill, minmax(80px, 1fr))',
+    gap: '0.8rem',
+    padding: '1rem 2rem',
+    backgroundColor: '#fafafa'
   },
   photoWrapper: {
     position: 'relative',
-    borderRadius: '12px',
+    borderRadius: '8px',
     overflow: 'hidden'
   },
   photoThumb: {
     width: '100%',
-    height: '100px',
+    height: '80px',
     objectFit: 'cover',
-    borderRadius: '12px',
-    border: '1px solid #e5e5e5'
+    borderRadius: '8px'
   },
   removePhotoBtn: {
     position: 'absolute',
-    top: '4px',
-    right: '4px',
-    width: '28px',
-    height: '28px',
-    backgroundColor: 'rgba(0,0,0,0.6)',
+    top: '2px',
+    right: '2px',
+    width: '24px',
+    height: '24px',
+    backgroundColor: 'rgba(0,0,0,0.5)',
     color: 'white',
     border: 'none',
     borderRadius: '50%',
     cursor: 'pointer',
-    fontSize: '16px',
+    fontSize: '14px',
     transition: 'all 0.2s'
   },
   toolsBar: {
     display: 'flex',
-    gap: '1rem',
-    padding: '0 2rem'
+    gap: '0.8rem',
+    padding: '1rem 2rem',
+    alignItems: 'center',
+    backgroundColor: '#fafafa'
   },
   photoButton: {
-    padding: '10px 16px',
+    width: '44px',
+    height: '44px',
     backgroundColor: '#e5e5e5',
-    color: '#1d1d1d',
-    fontSize: '15px',
-    fontWeight: '600',
     border: 'none',
-    borderRadius: '10px',
+    borderRadius: '8px',
     cursor: 'pointer',
-    transition: 'all 0.2s',
-    display: 'inline-flex',
+    fontSize: '20px',
+    display: 'flex',
     alignItems: 'center',
-    gap: '6px'
+    justifyContent: 'center',
+    transition: 'all 0.2s'
   },
   submitButton: { 
     flex: 1,
-    padding: '10px 16px', 
+    padding: '12px', 
     backgroundColor: '#007AFF', 
     color: 'white', 
     fontSize: '15px', 
     fontWeight: '600', 
     border: 'none', 
-    borderRadius: '10px', 
+    borderRadius: '8px', 
     transition: 'all 0.2s',
     cursor: 'pointer'
   }
