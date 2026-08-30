@@ -27,12 +27,14 @@ export default function VoiceRecorder({ onTranscript }) {
 
   return (
     <div style={styles.container}>
-      <textarea
-        value={transcript}
-        onChange={(e) => setTranscript(e.target.value)}
-        placeholder="Describe your recipe here... Include ingredients, steps, cooking time, etc."
-        style={styles.textarea}
-      />
+      <div style={styles.pageWrapper}>
+        <textarea
+          value={transcript}
+          onChange={(e) => setTranscript(e.target.value)}
+          placeholder="Describe your recipe here... Include ingredients, steps, cooking time, etc."
+          style={styles.textarea}
+        />
+      </div>
 
       {photos.length > 0 && (
         <div style={styles.photosGrid}>
@@ -79,27 +81,54 @@ export default function VoiceRecorder({ onTranscript }) {
 }
 
 const styles = {
-  container: { width: '100%' },
+  container: { 
+    width: '100%',
+    maxWidth: '900px',
+    margin: '0 auto'
+  },
+  pageWrapper: {
+    backgroundColor: '#ffffff',
+    borderRadius: '16px',
+    boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+    padding: '40px 50px',
+    backgroundImage: `
+      repeating-linear-gradient(
+        0deg,
+        #f0f0f0 0px,
+        #f0f0f0 1px,
+        transparent 1px,
+        transparent 28px
+      ),
+      repeating-linear-gradient(
+        90deg,
+        transparent 0px,
+        transparent 49px,
+        #e8e8e8 49px,
+        #e8e8e8 50px
+      )
+    `,
+    backgroundSize: '100% 28px, 50px 100%',
+    backgroundPosition: '0 0, 0 0',
+    minHeight: '600px'
+  },
   textarea: { 
     width: '100%', 
-    padding: '20px', 
-    fontSize: '17px', 
-    border: '1px solid #e5e5e5', 
-    borderRadius: '16px', 
-    boxSizing: 'border-box', 
-    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif', 
-    lineHeight: '1.7', 
-    minHeight: '400px',
-    marginBottom: '1.5rem',
-    resize: 'vertical',
+    height: '550px',
+    padding: '0',
+    fontSize: '16px', 
+    border: 'none',
     outline: 'none',
-    backgroundColor: '#fafafa',
-    transition: 'all 0.2s'
+    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif', 
+    lineHeight: '28px',
+    resize: 'none',
+    backgroundColor: 'transparent',
+    color: '#1d1d1d'
   },
   photosGrid: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))',
+    gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))',
     gap: '1rem',
+    marginTop: '2rem',
     marginBottom: '1.5rem'
   },
   photoWrapper: {
@@ -109,9 +138,10 @@ const styles = {
   },
   photoThumb: {
     width: '100%',
-    height: '100px',
+    height: '120px',
     objectFit: 'cover',
-    borderRadius: '12px'
+    borderRadius: '12px',
+    border: '1px solid #e5e5e5'
   },
   removePhotoBtn: {
     position: 'absolute',
@@ -133,6 +163,7 @@ const styles = {
   toolsBar: {
     display: 'flex',
     gap: '1rem',
+    marginTop: '2rem',
     marginBottom: '1.5rem'
   },
   photoButton: {
@@ -158,6 +189,7 @@ const styles = {
     fontWeight: '600', 
     border: 'none', 
     borderRadius: '12px', 
-    transition: 'all 0.2s'
+    transition: 'all 0.2s',
+    cursor: 'pointer'
   }
 };
