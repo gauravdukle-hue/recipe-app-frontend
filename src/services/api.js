@@ -1,38 +1,36 @@
 import axios from 'axios';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
-
 const api = axios.create({
-  baseURL: API_URL,
-  headers: { 'Content-Type': 'application/json' },
+  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3000',
   withCredentials: true
+});
+
+// Add token to every request
+api.interceptors.request.use((config) => {
+  const token = getAuthToken();
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
 });
 
 export const setAuthToken = (token) => {
   if (token) {
-    api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
     sessionStorage.setItem('auth_token', token);
   } else {
-    delete api.defaults.headers.common['Authorization'];
     sessionStorage.removeItem('auth_token');
   }
 };
 
-export const getAuthToken = () => sessionStorage.getItem('auth_token');
+export const getAuthToken = () => {
+  return sessionStorage.getItem('auth_token');
+};
 
-export const signup = (email, password, name) =>
-  api.post('/auth/signup', { email, password, name });
-
-export const login = (email, password) =>
-  api.post('/auth/login', { email, password });
-
-export const createRecipe = (title, description, cuisine_tag) =>
-  api.post('/recipes', { title, description, cuisine_tag });
-
-export const getRecipes = (view = 'mine') =>
-  api.get(`/recipes?view=${view}`);
-
-export const getRecipe = (id) =>
-  api.get(`/recipes/${id}`);
+export const loginUser = (email, password) => api.post('/auth/login', { email, password });
+export const signupUser = (email, password, name) => api.post('/auth/signup', { email, password, name });
+export const createRecipe = (title, description, cuisine_tag) => api.post('/recipes', { title, description, cuisine_tag });
+export const getRecipes = (view = 'all') => api.get('/recipes', { params: { view } });
+export const getRecipeDetail = (id) => api.get(`/recipes/${id}`);
+export const uploadPhoto = (recipe_id, photo_data, caption) => api.post(`/recipes/${recipe_id}/photos`, { photo_data, caption });
 
 export default api;
