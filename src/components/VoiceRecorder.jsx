@@ -90,7 +90,6 @@ export default function VoiceRecorder({ onTranscript }) {
           onChange={(e) => setTranscript(e.target.value)}
           placeholder="Describe your recipe..."
           style={styles.textarea}
-          rows={12}
         />
         <button onClick={handleSubmit} disabled={!transcript.trim()} style={styles.submitButton}>
           Parse Recipe with AI
@@ -156,18 +155,18 @@ export default function VoiceRecorder({ onTranscript }) {
 }
 
 const styles = {
-  container: { padding: '2rem', maxWidth: '100%', margin: '0 auto' },
-  title: { fontSize: '28px', marginBottom: '2rem', color: '#2c3e50' },
-  languageSelector: { marginBottom: '2rem' },
-  labelText: { fontSize: '18px', display: 'block', marginBottom: '0.8rem', fontWeight: 'bold' },
-  selectInput: { width: '100%', padding: '16px', marginTop: '0.5rem', borderRadius: '8px', border: '2px solid #bdc3c7', fontSize: '18px' },
-  recordButton: { width: '100%', padding: '24px', fontSize: '22px', fontWeight: 'bold', color: 'white', border: 'none', borderRadius: '12px', cursor: 'pointer', marginBottom: '1rem', minHeight: '70px' },
-  typeButton: { width: '100%', padding: '18px', fontSize: '18px', backgroundColor: '#95a5a6', color: 'white', border: 'none', borderRadius: '12px', cursor: 'pointer', marginBottom: '1rem' },
-  listening: { textAlign: 'center', color: '#e74c3c', fontWeight: 'bold', marginBottom: '1rem', fontSize: '18px' },
-  transcriptBox: { backgroundColor: '#ecf0f1', padding: '2rem', borderRadius: '12px', marginTop: '1.5rem', marginBottom: '1.5rem' },
-  transcriptTitle: { fontSize: '20px', color: '#2c3e50', marginBottom: '1rem' },
-  transcript: { fontSize: '18px', lineHeight: '1.8', color: '#2c3e50', marginBottom: '1rem' },
-  submitButton: { width: '100%', padding: '18px', backgroundColor: '#27ae60', color: 'white', fontSize: '18px', fontWeight: 'bold', border: 'none', borderRadius: '12px', cursor: 'pointer', minHeight: '60px' },
-  backButton: { width: '100%', padding: '16px', backgroundColor: '#95a5a6', color: 'white', border: 'none', borderRadius: '12px', cursor: 'pointer', marginTop: '1rem', fontSize: '18px' },
-  textarea: { width: '100%', padding: '16px', fontSize: '18px', border: '2px solid #bdc3c7', borderRadius: '8px', boxSizing: 'border-box', fontFamily: 'inherit', lineHeight: '1.8' }
+  container: { padding: '3rem 2rem', maxWidth: '100%', margin: '0 auto', minHeight: '100vh' },
+  title: { fontSize: '36px', marginBottom: '3rem', color: '#2c3e50', fontWeight: 'bold' },
+  languageSelector: { marginBottom: '2.5rem' },
+  labelText: { fontSize: '24px', display: 'block', marginBottom: '1rem', fontWeight: 'bold', color: '#2c3e50' },
+  selectInput: { width: '100%', padding: '20px', borderRadius: '12px', border: '3px solid #bdc3c7', fontSize: '22px', boxSizing: 'border-box' },
+  recordButton: { width: '100%', padding: '30px', fontSize: '26px', fontWeight: 'bold', color: 'white', border: 'none', borderRadius: '16px', cursor: 'pointer', marginBottom: '1.5rem', minHeight: '90px' },
+  typeButton: { width: '100%', padding: '24px', fontSize: '22px', backgroundColor: '#95a5a6', color: 'white', border: 'none', borderRadius: '16px', cursor: 'pointer', marginBottom: '2rem', fontWeight: 'bold' },
+  listening: { textAlign: 'center', color: '#e74c3c', fontWeight: 'bold', marginBottom: '2rem', fontSize: '24px' },
+  transcriptBox: { backgroundColor: '#ecf0f1', padding: '3rem', borderRadius: '16px', marginTop: '2rem', marginBottom: '2rem' },
+  transcriptTitle: { fontSize: '28px', color: '#2c3e50', marginBottom: '1.5rem', fontWeight: 'bold' },
+  transcript: { fontSize: '22px', lineHeight: '2', color: '#2c3e50', marginBottom: '1rem' },
+  submitButton: { width: '100%', padding: '24px', backgroundColor: '#27ae60', color: 'white', fontSize: '24px', fontWeight: 'bold', border: 'none', borderRadius: '16px', cursor: 'pointer', minHeight: '80px' },
+  backButton: { width: '100%', padding: '20px', backgroundColor: '#95a5a6', color: 'white', border: 'none', borderRadius: '16px', cursor: 'pointer', marginTop: '1.5rem', fontSize: '22px', fontWeight: 'bold' },
+  textarea: { width: '100%', padding: '24px', fontSize: '24px', border: '3px solid #bdc3c7', borderRadius: '12px', boxSizing: 'border-box', fontFamily: 'inherit', lineHeight: '2', minHeight: '600px', marginBottom: '2rem', resize: 'vertical' }
 };
