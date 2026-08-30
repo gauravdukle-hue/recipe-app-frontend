@@ -1,89 +1,75 @@
 import { useState, useEffect } from 'react';
 import { getRecipes } from '../services/api';
 
-export default function RecipeLibrary({ onBack, onSelectRecipe }) {
+export default function RecipeLibrary({ onCreateClick, onSelectRecipe }) {
   const [recipes, setRecipes] = useState([]);
   const [view, setView] = useState('mine');
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchRecipes();
   }, [view]);
 
   const fetchRecipes = async () => {
-    setLoading(true);
     try {
-      const res = await getRecipes(view);
-      setRecipes(res.data);
-    } catch (error) {
-      console.error('Error fetching recipes:', error);
-      alert('Error loading recipes');
+      setLoading(true);
+      const response = await getRecipes(view);
+      setRecipes(response.data || []);
+    } catch (err) {
+      console.error('Error fetching recipes:', err);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   return (
     <div style={styles.container}>
       <div style={styles.header}>
-        <h1 style={styles.title}>🍽️ Recipe Library</h1>
-        <button onClick={onBack} style={styles.backButton}>
-          + Add Recipe
+        <div>
+          <h2 style={styles.title}>My Recipes</h2>
+          <p style={styles.subtitle}>{recipes.length} recipes</p>
+        </div>
+        <button onClick={onCreateClick} style={styles.createButton}>
+          ➕ New Recipe
         </button>
       </div>
 
       <div style={styles.tabs}>
-        <button
-          onClick={() => setView('mine')}
-          style={{
-            ...styles.tab,
-            backgroundColor: view === 'mine' ? '#3498db' : '#95a5a6'
-          }}
-        >
-          📝 My Recipes
-        </button>
-        <button
-          onClick={() => setView('shared')}
-          style={{
-            ...styles.tab,
-            backgroundColor: view === 'shared' ? '#3498db' : '#95a5a6'
-          }}
-        >
-          👥 Shared with Me
-        </button>
-        <button
-          onClick={() => setView('all')}
-          style={{
-            ...styles.tab,
-            backgroundColor: view === 'all' ? '#3498db' : '#95a5a6'
-          }}
-        >
-          🌍 All Recipes
-        </button>
+        {['mine', 'shared', 'all'].map(v => (
+          <button
+            key={v}
+            onClick={() => setView(v)}
+            style={{
+              ...styles.tab,
+              ...(view === v ? styles.tabActive : styles.tabInactive)
+            }}
+          >
+            {v === 'mine' ? 'My Recipes' : v === 'shared' ? 'Shared' : 'All'}
+          </button>
+        ))}
       </div>
 
       {loading ? (
-        <p style={styles.loading}>Loading recipes...</p>
+        <p style={styles.loading}>Loading...</p>
       ) : recipes.length === 0 ? (
-        <p style={styles.empty}>No recipes yet. Create one to get started!</p>
+        <p style={styles.empty}>No recipes yet</p>
       ) : (
-        <div style={styles.recipeList}>
-          {recipes.map((recipe) => (
+        <div style={styles.grid}>
+          {recipes.map(recipe => (
             <div
               key={recipe.id}
-              style={styles.recipeCard}
               onClick={() => onSelectRecipe(recipe.id)}
+              style={styles.card}
+              onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-4px)'}
+              onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
             >
-              <h3 style={styles.recipeName}>{recipe.title}</h3>
-              {recipe.cuisine_tag && (
-                <p style={styles.cuisine}>🏷️ {recipe.cuisine_tag}</p>
+              {recipe.photo_url && (
+                <img src={recipe.photo_url} alt={recipe.title} style={styles.photo} />
               )}
-              <p style={styles.owner}>by {recipe.owner_name}</p>
-              <p style={styles.ingredients}>
-                📦 {recipe.ingredient_count} ingredients
-              </p>
-              <p style={styles.steps}>
-                👣 {recipe.step_count} steps
-              </p>
+              <div style={styles.cardContent}>
+                <h3 style={styles.recipeTitle}>{recipe.title}</h3>
+                <p style={styles.cuisine}>{recipe.cuisine_tag || 'Recipe'}</p>
+              </div>
             </div>
           ))}
         </div>
@@ -93,99 +79,21 @@ export default function RecipeLibrary({ onBack, onSelectRecipe }) {
 }
 
 const styles = {
-  container: {
-    padding: '2rem',
-    maxWidth: '900px',
-    margin: '0 auto'
-  },
-  header: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: '2rem'
-  },
-  title: {
-    fontSize: '28px',
-    color: '#2c3e50',
-    margin: 0
-  },
-  backButton: {
-    padding: '10px 20px',
-    backgroundColor: '#27ae60',
-    color: 'white',
-    border: 'none',
-    borderRadius: '4px',
-    cursor: 'pointer',
-    fontSize: '16px',
-    fontWeight: 'bold'
-  },
-  tabs: {
-    display: 'flex',
-    gap: '1rem',
-    marginBottom: '2rem'
-  },
-  tab: {
-    flex: 1,
-    padding: '12px',
-    color: 'white',
-    border: 'none',
-    borderRadius: '4px',
-    cursor: 'pointer',
-    fontSize: '16px',
-    fontWeight: 'bold'
-  },
-  loading: {
-    textAlign: 'center',
-    fontSize: '16px',
-    color: '#7f8c8d'
-  },
-  empty: {
-    textAlign: 'center',
-    fontSize: '16px',
-    color: '#7f8c8d',
-    padding: '2rem'
-  },
-  recipeList: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-    gap: '1.5rem'
-  },
-  recipeCard: {
-    backgroundColor: '#ecf0f1',
-    padding: '1.5rem',
-    borderRadius: '8px',
-    boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-    cursor: 'pointer',
-    transition: 'transform 0.2s'
-  },
-  recipeName: {
-    fontSize: '18px',
-    color: '#2c3e50',
-    marginBottom: '0.5rem',
-    margin: 0
-  },
-  cuisine: {
-    fontSize: '14px',
-    color: '#7f8c8d',
-    marginBottom: '0.5rem',
-    margin: 0
-  },
-  owner: {
-    fontSize: '12px',
-    color: '#95a5a6',
-    marginBottom: '1rem',
-    fontStyle: 'italic',
-    margin: 0
-  },
-  ingredients: {
-    fontSize: '14px',
-    color: '#2c3e50',
-    marginBottom: '0.5rem',
-    margin: 0
-  },
-  steps: {
-    fontSize: '14px',
-    color: '#2c3e50',
-    margin: 0
-  }
+  container: { maxWidth: '1200px', margin: '0 auto' },
+  header: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '2rem' },
+  title: { fontSize: '28px', fontWeight: '700', color: '#1d1d1d', margin: '0 0 0.5rem 0' },
+  subtitle: { fontSize: '14px', color: '#999', margin: 0 },
+  createButton: { padding: '10px 20px', backgroundColor: '#007AFF', color: 'white', fontSize: '15px', fontWeight: '600', border: 'none', borderRadius: '10px', cursor: 'pointer', transition: 'all 0.2s' },
+  tabs: { display: 'flex', gap: '0.5rem', marginBottom: '2rem' },
+  tab: { padding: '8px 16px', border: 'none', borderRadius: '8px', fontSize: '14px', fontWeight: '500', cursor: 'pointer', transition: 'all 0.2s' },
+  tabActive: { backgroundColor: '#1d1d1d', color: 'white' },
+  tabInactive: { backgroundColor: '#e5e5e5', color: '#666' },
+  grid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '1.5rem' },
+  card: { backgroundColor: 'white', borderRadius: '12px', overflow: 'hidden', cursor: 'pointer', boxShadow: '0 1px 3px rgba(0,0,0,0.08)', transition: 'all 0.3s ease' },
+  photo: { width: '100%', height: '160px', objectFit: 'cover' },
+  cardContent: { padding: '1.25rem' },
+  recipeTitle: { fontSize: '16px', fontWeight: '600', color: '#1d1d1d', margin: '0 0 0.5rem 0' },
+  cuisine: { fontSize: '13px', color: '#999', margin: 0 },
+  loading: { textAlign: 'center', color: '#999', fontSize: '15px' },
+  empty: { textAlign: 'center', color: '#999', fontSize: '15px' }
 };
