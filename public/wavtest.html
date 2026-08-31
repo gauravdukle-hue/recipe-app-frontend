@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>WAV recorder test</title>
+<style>
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 24px 20px 60px;
+    font-size: 18px;
+    line-height: 1.5;
+    color: #1a1a1a;
+  }
+  h1 { font-size: 22px; margin: 0 0 4px; }
+  .sub { color: #666; font-size: 15px; margin: 0 0 24px; }
+
+  button {
+    font: inherit;
+    font-size: 20px;
+    width: 100%;
+    padding: 22px;
+    margin-bottom: 12px;
+    border: none;
+    border-radius: 10px;
+    background: #1a5490;
+    color: white;
+    -webkit-tap-highlight-color: transparent;
+  }
+  button:disabled { background: #c4c4c4; }
+  button.stop { background: #a02020; }
+
+  #meter {
+    height: 14px;
+    background: #e8e8e8;
+    border-radius: 7px;
+    overflow: hidden;
+    margin: 4px 0 20px;
+  }
+  #meterFill { height: 100%; width: 0%; background: #2a8a3a; transition: width 60ms linear; }
+
+  #log {
+    background: #f4f4f4;
+    border-radius: 8px;
+    padding: 12px 14px;
+    font-family: ui-monospace, Menlo, monospace;
+    font-size: 13px;
+    line-height: 1.6;
+    white-space: pre-wrap;
+    word-break: break-word;
+    min-height: 120px;
+  }
+  audio { width: 100%; margin-bottom: 12px; }
+  a.dl {
+    display: block;
+    text-align: center;
+    padding: 18px;
+    background: #eee;
+    border-radius: 10px;
+    color: #1a5490;
+    text-decoration: none;
+    margin-bottom: 20px;
+  }
+  .hidden { display: none; }
+</style>
+</head>
+<body>
+
+<h1>WAV recorder test</h1>
+<p class="sub">Records raw PCM and encodes 16 kHz mono WAV in the browser. Say a few words, stop, then play it back.</p>
+
+<button id="recBtn">Start recording</button>
+<div id="meter"><div id="meterFill"></div></div>
+
+<div id="playback" class="hidden">
+  <audio id="player" controls playsinline></audio>
+  <a id="dlLink" class="dl" download="wavtest.wav">Save the file</a>
+</div>
+
+<div id="log">Ready.</div>
+
+<script>
+(function () {
+  'use strict';
+
+  var TARGET_RATE = 16000;
+  var BUFFER_SIZE = 4096;
+
+  var ctx = null, stream = null, source = null, processor = null, zeroGain = null;
+  var chunks = [], totalSamples = 0, inputRate = 0;
+  var carry = 0, acc = 0, accCount = 0;
+  var recording = false;
+  var lastUrl = null;
+
+  var recBtn = document.getElementById('recBtn');
+  var meterFill = document.getElementById('meterFill');
+  var logEl = document.getElementById('log');
+  var playback = document.getElementById('playback');
+  var player = document.getElementById('player');
+  var dlLink = document.getElementById('dlLink');
+
+  function log(msg) {
+    logEl.textContent += '\n' + msg;
+    logEl.scrollTop = logEl.scrollHeight;
+  }
+
+  function resetLog(msg) { logEl.textContent = msg; }
+
+  // --- WAV encoding -------------------------------------------------------
+
+  function encodeWav(samples, sampleRate) {
+    var buffer = new ArrayBuffer(44 + samples.length * 2);
+    var view = new DataView(buffer);
+
+    function writeStr(offset, str) {
+      for (var i = 0; i < str.length; i++) view.setUint8(offset + i, str.charCodeAt(i));
+    }
+
+    writeStr(0, 'RIFF');
+    view.setUint32(4, 36 + samples.length * 2, true);
+    writeStr(8, 'WAVE');
+    writeStr(12, 'fmt ');
+    view.setUint32(16, 16, true);          // subchunk size
+    view.setUint16(20, 1, true);           // PCM
+    view.setUint16(22, 1, true);           // mono
+    view.setUint32(24, sampleRate, true);
+    view.setUint32(28, sampleRate * 2, true); // byte rate
+    view.setUint16(32, 2, true);           // block align
+    view.setUint16(34, 16, true);          // bits per sample
+    writeStr(36, 'data');
+    view.setUint32(40, samples.length * 2, true);
+
+    var offset = 44;
+    for (var i = 0; i < samples.length; i++) {
+      var s = Math.max(-1, Math.min(1, samples[i]));
+      view.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
+      offset += 2;
+    }
+    return new Blob([view], { type: 'audio/wav' });
+  }
+
+  function flatten(chunkList, total) {
+    var out = new Float32Array(total);
+    var offset = 0;
+    for (var i = 0; i < chunkList.length; i++) {
+      out.set(chunkList[i], offset);
+      offset += chunkList[i].length;
+    }
+    return out;
+  }
+
+  // --- Recording ----------------------------------------------------------
+
+  async function start() {
+    // RULE 1: build the AudioContext synchronously, inside the tap handler,
+    // BEFORE any await. Awaiting getUserMedia first lets the user gesture
+    // expire and iOS Safari leaves the context suspended forever.
+    var AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) { resetLog('No Web Audio support in this browser.'); return; }
+
+    ctx = new AC();
+    if (ctx.state === 'suspended') ctx.resume();
+
+    inputRate = ctx.sampleRate;
+    chunks = [];
+    totalSamples = 0;
+    carry = 0; acc = 0; accCount = 0;
+
+    resetLog('Context created.');
+    log('state: ' + ctx.state);
+    log('input rate: ' + inputRate + ' Hz');
+    log('target rate: ' + TARGET_RATE + ' Hz');
+
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          channelCount: 1,
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true
+        }
+      });
+    } catch (err) {
+      log('mic denied or unavailable: ' + err.name);
+      cleanup();
+      return;
+    }
+
+    log('mic granted.');
+    log('state after mic: ' + ctx.state);
+    if (ctx.state === 'suspended') {
+      ctx.resume();
+      log('resumed -> ' + ctx.state);
+    }
+
+    source = ctx.createMediaStreamSource(stream);
+    processor = ctx.createScriptProcessor(BUFFER_SIZE, 1, 1);
+
+    var ratio = inputRate / TARGET_RATE;
+    var callbackCount = 0;
+
+    processor.onaudioprocess = function (e) {
+      if (!recording) return;
+      var input = e.inputBuffer.getChannelData(0);
+
+      // RULE 3: downsample inside the callback. Holding raw 48 kHz floats for
+      // a long recipe uses enough memory that iOS Safari kills the tab.
+      var out = new Float32Array(Math.ceil(input.length / ratio) + 1);
+      var n = 0;
+      var peak = 0;
+
+      for (var i = 0; i < input.length; i++) {
+        var v = input[i];
+        if (v > peak) peak = v; else if (-v > peak) peak = -v;
+        acc += v;
+        accCount++;
+        carry += 1;
+        if (carry >= ratio) {
+          out[n++] = acc / accCount;
+          acc = 0;
+          accCount = 0;
+          carry -= ratio;
+        }
+      }
+
+      chunks.push(out.subarray(0, n));
+      totalSamples += n;
+
+      meterFill.style.width = Math.min(100, Math.round(peak * 180)) + '%';
+
+      callbackCount++;
+      if (callbackCount === 1) log('first audio callback fired.');
+    };
+
+    // RULE 2: route through a zero-gain node to destination. The processor
+    // needs a path to destination to keep firing, but connecting it directly
+    // sends the mic to the speaker and causes feedback on iPad.
+    zeroGain = ctx.createGain();
+    zeroGain.gain.value = 0;
+
+    source.connect(processor);
+    processor.connect(zeroGain);
+    zeroGain.connect(ctx.destination);
+
+    recording = true;
+    recBtn.textContent = 'Stop recording';
+    recBtn.className = 'stop';
+    log('recording...');
+  }
+
+  function stop() {
+    recording = false;
+    recBtn.disabled = true;
+    recBtn.textContent = 'Encoding...';
+
+    var samples = flatten(chunks, totalSamples);
+    var seconds = totalSamples / TARGET_RATE;
+
+    cleanup();
+
+    if (totalSamples === 0) {
+      log('NO SAMPLES CAPTURED — the callback never fired.');
+      recBtn.disabled = false;
+      recBtn.textContent = 'Start recording';
+      recBtn.className = '';
+      return;
+    }
+
+    var blob = encodeWav(samples, TARGET_RATE);
+    if (lastUrl) URL.revokeObjectURL(lastUrl);
+    lastUrl = URL.createObjectURL(blob);
+
+    player.src = lastUrl;
+    dlLink.href = lastUrl;
+    playback.classList.remove('hidden');
+
+    log('samples: ' + totalSamples);
+    log('duration: ' + seconds.toFixed(2) + ' s');
+    log('file size: ' + (blob.size / 1024).toFixed(1) + ' KB');
+    log('estimated 3 min: ' + ((blob.size / seconds) * 180 / 1048576).toFixed(1) + ' MB');
+    log('done — play it back.');
+
+    recBtn.disabled = false;
+    recBtn.textContent = 'Record again';
+    recBtn.className = '';
+  }
+
+  function cleanup() {
+    meterFill.style.width = '0%';
+    if (processor) { processor.onaudioprocess = null; try { processor.disconnect(); } catch (e) {} }
+    if (zeroGain) { try { zeroGain.disconnect(); } catch (e) {} }
+    if (source) { try { source.disconnect(); } catch (e) {} }
+    if (stream) stream.getTracks().forEach(function (t) { t.stop(); });
+    if (ctx) { try { ctx.close(); } catch (e) {} }
+    processor = zeroGain = source = stream = ctx = null;
+  }
+
+  recBtn.addEventListener('click', function () {
+    if (recording) stop(); else start();
+  });
+
+  resetLog('Ready. Tap to start.\nuser agent: ' + navigator.userAgent);
+})();
+</script>
+
+</body>
+</html>
