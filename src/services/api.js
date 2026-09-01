@@ -54,6 +54,10 @@ export const uploadAudio = async (recipe_id, blob, duration_seconds) => {
   });
 };
 
+export const getReactions = (recipe_id) => api.get(`/recipes/${recipe_id}/reactions`);
+export const toggleReaction = (recipe_id, reaction) =>
+  api.post(`/recipes/${recipe_id}/reactions`, { reaction });
+
 export const getRecipeAudio = (recipe_id) => api.get(`/audio/${recipe_id}`);
 export const getAudioFile = (audio_id) => api.get(`/audio/file/${audio_id}`);
 
