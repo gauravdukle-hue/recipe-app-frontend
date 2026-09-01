@@ -1,14 +1,16 @@
 import { useState } from 'react';
 import { useWavRecorder } from '../hooks/useWavRecorder';
+import { LANGUAGES, DEFAULT_LANGUAGE } from '../languages';
 
 export default function VoiceRecorder({ onTranscript }) {
   const [transcript, setTranscript] = useState('');
+  const [language, setLanguage] = useState(DEFAULT_LANGUAGE);
   const { status, start, stop, reset, blob, url, duration, level, error } = useWavRecorder();
 
   const handleSubmit = () => {
     const text = transcript.trim();
     if (!text && !blob) return;
-    onTranscript({ text, audioBlob: blob, audioDuration: duration });
+    onTranscript({ text, audioBlob: blob, audioDuration: duration, language });
   };
 
   const fmt = (s) => {
@@ -72,6 +74,18 @@ export default function VoiceRecorder({ onTranscript }) {
       {error && <div style={styles.error}>{error}</div>}
 
       <div style={styles.toolsBar}>
+        <select
+          value={language}
+          onChange={(e) => setLanguage(e.target.value)}
+          disabled={status === 'recording'}
+          aria-label="Language being spoken"
+          style={styles.langSelect}
+        >
+          {LANGUAGES.map((l) => (
+            <option key={l.code} value={l.code}>{l.label}</option>
+          ))}
+        </select>
+
         <button
           onClick={status === 'recording' ? stop : start}
           style={{
@@ -197,6 +211,16 @@ const styles = {
     padding: '1rem 2rem',
     alignItems: 'center',
     backgroundColor: '#fafafa'
+  },
+  langSelect: {
+    padding: '16px 12px',
+    minHeight: '52px',
+    fontSize: '16px',
+    fontFamily: 'inherit',
+    border: '1px solid #e5e5e5',
+    borderRadius: '8px',
+    backgroundColor: 'white',
+    color: '#1d1d1d'
   },
   recordButton: {
     minWidth: '140px',

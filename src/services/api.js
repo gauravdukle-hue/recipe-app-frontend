@@ -44,13 +44,13 @@ const blobToBase64 = (blob) =>
     reader.readAsDataURL(blob);
   });
 
-export const uploadAudio = async (recipe_id, blob, duration_seconds) => {
+export const uploadAudio = async (recipe_id, blob, duration_seconds, language) => {
   const audio_data = await blobToBase64(blob);
   return api.post(`/audio/${recipe_id}`, {
     audio_data,
     duration_seconds,
     sample_rate: 16000,
-    language: 'gom'
+    language: language || 'kok'
   });
 };
 

@@ -8,6 +8,7 @@ export default function RecipeForm({ onBack }) {
   const [description, setDescription] = useState('');
   const [audioBlob, setAudioBlob] = useState(null);
   const [audioDuration, setAudioDuration] = useState(0);
+  const [audioLanguage, setAudioLanguage] = useState('kok');
   const [title, setTitle] = useState('');
   const [cuisine, setCuisine] = useState('');
   const [loading, setLoading] = useState(false);
@@ -15,10 +16,11 @@ export default function RecipeForm({ onBack }) {
   const [notice, setNotice] = useState('');
   const [recipeId, setRecipeId] = useState(null);
 
-  const handleTranscript = ({ text, audioBlob: blob, audioDuration: dur }) => {
+  const handleTranscript = ({ text, audioBlob: blob, audioDuration: dur, language }) => {
     setDescription(text || '');
     setAudioBlob(blob || null);
     setAudioDuration(dur || 0);
+    setAudioLanguage(language || 'kok');
     setStep(2);
   };
 
@@ -48,7 +50,7 @@ export default function RecipeForm({ onBack }) {
 
       if (audioBlob) {
         try {
-          await uploadAudio(newId, audioBlob, audioDuration);
+          await uploadAudio(newId, audioBlob, audioDuration, audioLanguage);
         } catch {
           // The recipe itself saved. Losing the audio shouldn't lose the recipe.
           setNotice('Recipe saved, but the recording did not upload.');
