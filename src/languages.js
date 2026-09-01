@@ -1,9 +1,11 @@
 // The 22 scheduled languages of India, which is what IndicConformer covers.
 // Codes are what the model expects as its second argument.
-// English is deliberately absent — it is not one of the 22, and choosing a
-// nearby language transcribes English phonetically into that script.
+// English is included but does NOT go to IndicConformer — it is not one of
+// the 22. The worker routes it to Google Speech-to-Text instead, which is both
+// more accurate for English and needs no model load.
 export const LANGUAGES = [
   { code: 'kok', label: 'Konkani' },
+  { code: 'en', label: 'English' },
   { code: 'mr', label: 'Marathi' },
   { code: 'hi', label: 'Hindi' },
   { code: 'as', label: 'Assamese' },
