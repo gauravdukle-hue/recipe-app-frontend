@@ -34,4 +34,27 @@ export const getRecipe = (id) => api.get(`/recipes/${id}`);
 export const getRecipeDetail = (id) => api.get(`/recipes/${id}`);
 export const uploadPhoto = (recipe_id, photo_data, caption) => api.post(`/recipes/${recipe_id}/photos`, { photo_data, caption });
 
+// --- Audio ----------------------------------------------------------------
+
+const blobToBase64 = (blob) =>
+  new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result.split(',')[1]);
+    reader.onerror = () => reject(new Error('Could not read the recording.'));
+    reader.readAsDataURL(blob);
+  });
+
+export const uploadAudio = async (recipe_id, blob, duration_seconds) => {
+  const audio_data = await blobToBase64(blob);
+  return api.post(`/audio/${recipe_id}`, {
+    audio_data,
+    duration_seconds,
+    sample_rate: 16000,
+    language: 'gom'
+  });
+};
+
+export const getRecipeAudio = (recipe_id) => api.get(`/audio/${recipe_id}`);
+export const getAudioFile = (audio_id) => api.get(`/audio/file/${audio_id}`);
+
 export default api;

@@ -1,29 +1,23 @@
 import { useState } from 'react';
+import { useWavRecorder } from '../hooks/useWavRecorder';
 
 export default function VoiceRecorder({ onTranscript }) {
   const [transcript, setTranscript] = useState('');
-  const [photos, setPhotos] = useState([]);
-
-  const handlePhotoAdd = (e) => {
-    const files = Array.from(e.target.files);
-    files.forEach(file => {
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        setPhotos([...photos, event.target.result]);
-      };
-      reader.readAsDataURL(file);
-    });
-  };
-
-  const handleRemovePhoto = (index) => {
-    setPhotos(photos.filter((_, i) => i !== index));
-  };
+  const { status, start, stop, reset, blob, url, duration, level, error } = useWavRecorder();
 
   const handleSubmit = () => {
-    if (transcript.trim()) {
-      onTranscript(transcript.trim());
-    }
+    const text = transcript.trim();
+    if (!text && !blob) return;
+    onTranscript({ text, audioBlob: blob, audioDuration: duration });
   };
+
+  const fmt = (s) => {
+    const m = Math.floor(s / 60);
+    const sec = Math.floor(s % 60);
+    return `${m}:${sec.toString().padStart(2, '0')}`;
+  };
+
+  const canSave = transcript.trim().length > 0 || blob !== null;
 
   return (
     <div style={styles.container}>
@@ -55,41 +49,47 @@ export default function VoiceRecorder({ onTranscript }) {
         />
       </div>
 
-      {photos.length > 0 && (
-        <div style={styles.photosGrid}>
-          {photos.map((photo, idx) => (
-            <div key={idx} style={styles.photoWrapper}>
-              <img src={photo} alt={`preview-${idx}`} style={styles.photoThumb} />
-              <button
-                onClick={() => handleRemovePhoto(idx)}
-                style={styles.removePhotoBtn}
-              >
-                ✕
-              </button>
-            </div>
-          ))}
+      {status === 'recording' && (
+        <div style={styles.recordingBar}>
+          <span style={styles.recDot} />
+          <span style={styles.recLabel}>Recording</span>
+          <div style={styles.meter}>
+            <div style={{ ...styles.meterFill, width: `${Math.round(level * 100)}%` }} />
+          </div>
         </div>
       )}
 
+      {status === 'ready' && url && (
+        <div style={styles.playbackBar}>
+          <audio src={url} controls playsInline style={styles.audio} />
+          <div style={styles.playbackMeta}>
+            <span>{fmt(duration)} recorded</span>
+            <button onClick={reset} style={styles.discardBtn}>Discard</button>
+          </div>
+        </div>
+      )}
+
+      {error && <div style={styles.error}>{error}</div>}
+
       <div style={styles.toolsBar}>
-        <label style={styles.photoButton}>
-          📷
-          <input
-            type="file"
-            multiple
-            accept="image/*"
-            onChange={handlePhotoAdd}
-            style={{ display: 'none' }}
-          />
-        </label>
-        
-        <button 
-          onClick={handleSubmit} 
-          disabled={!transcript.trim()} 
+        <button
+          onClick={status === 'recording' ? stop : start}
+          style={{
+            ...styles.recordButton,
+            backgroundColor: status === 'recording' ? '#c62828' : '#e5e5e5',
+            color: status === 'recording' ? 'white' : '#1d1d1d'
+          }}
+        >
+          {status === 'recording' ? 'Stop' : status === 'ready' ? 'Record again' : 'Record'}
+        </button>
+
+        <button
+          onClick={handleSubmit}
+          disabled={!canSave}
           style={{
             ...styles.submitButton,
-            opacity: transcript.trim() ? 1 : 0.5,
-            cursor: transcript.trim() ? 'pointer' : 'not-allowed'
+            opacity: canSave ? 1 : 0.5,
+            cursor: canSave ? 'pointer' : 'not-allowed'
           }}
         >
           Save
@@ -122,14 +122,14 @@ const styles = {
     height: '100%',
     pointerEvents: 'none'
   },
-  textarea: { 
-    width: '100%', 
+  textarea: {
+    width: '100%',
     height: '100%',
     padding: '160px 0 0 0',
     fontSize: '20px',
     border: 'none',
     outline: 'none',
-    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif', 
+    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
     lineHeight: '32px',
     resize: 'none',
     backgroundColor: 'transparent',
@@ -140,37 +140,56 @@ const styles = {
     WebkitAppearance: 'none',
     WebkitTextSizeAdjust: '100%'
   },
-  photosGrid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fill, minmax(80px, 1fr))',
+  recordingBar: {
+    display: 'flex',
+    alignItems: 'center',
     gap: '0.8rem',
     padding: '1rem 2rem',
     backgroundColor: '#fafafa'
   },
-  photoWrapper: {
-    position: 'relative',
-    borderRadius: '8px',
+  recDot: {
+    width: '12px',
+    height: '12px',
+    borderRadius: '50%',
+    backgroundColor: '#c62828',
+    flexShrink: 0
+  },
+  recLabel: { fontSize: '15px', color: '#1d1d1d', flexShrink: 0 },
+  meter: {
+    flex: 1,
+    height: '10px',
+    backgroundColor: '#e5e5e5',
+    borderRadius: '5px',
     overflow: 'hidden'
   },
-  photoThumb: {
-    width: '100%',
-    height: '80px',
-    objectFit: 'cover',
-    borderRadius: '8px'
+  meterFill: {
+    height: '100%',
+    backgroundColor: '#2a8a3a',
+    transition: 'width 60ms linear'
   },
-  removePhotoBtn: {
-    position: 'absolute',
-    top: '2px',
-    right: '2px',
-    width: '24px',
-    height: '24px',
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    color: 'white',
-    border: 'none',
-    borderRadius: '50%',
-    cursor: 'pointer',
+  playbackBar: { padding: '1rem 2rem', backgroundColor: '#fafafa' },
+  audio: { width: '100%', marginBottom: '0.5rem' },
+  playbackMeta: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     fontSize: '14px',
-    transition: 'all 0.2s'
+    color: '#666'
+  },
+  discardBtn: {
+    padding: '8px 14px',
+    backgroundColor: '#e5e5e5',
+    border: 'none',
+    borderRadius: '8px',
+    fontSize: '14px',
+    cursor: 'pointer',
+    color: '#1d1d1d'
+  },
+  error: {
+    backgroundColor: '#ffebee',
+    color: '#c62828',
+    padding: '12px 2rem',
+    fontSize: '14px'
   },
   toolsBar: {
     display: 'flex',
@@ -179,29 +198,24 @@ const styles = {
     alignItems: 'center',
     backgroundColor: '#fafafa'
   },
-  photoButton: {
-    width: '44px',
-    height: '44px',
-    backgroundColor: '#e5e5e5',
+  recordButton: {
+    minWidth: '140px',
+    padding: '16px 20px',
     border: 'none',
     borderRadius: '8px',
     cursor: 'pointer',
-    fontSize: '20px',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    transition: 'all 0.2s'
+    fontSize: '16px',
+    fontWeight: '600',
+    WebkitTapHighlightColor: 'transparent'
   },
-  submitButton: { 
+  submitButton: {
     flex: 1,
-    padding: '12px', 
-    backgroundColor: '#007AFF', 
-    color: 'white', 
-    fontSize: '15px', 
-    fontWeight: '600', 
-    border: 'none', 
-    borderRadius: '8px', 
-    transition: 'all 0.2s',
-    cursor: 'pointer'
+    padding: '16px',
+    backgroundColor: '#007AFF',
+    color: 'white',
+    fontSize: '16px',
+    fontWeight: '600',
+    border: 'none',
+    borderRadius: '8px'
   }
 };
