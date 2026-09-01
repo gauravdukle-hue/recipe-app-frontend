@@ -63,9 +63,11 @@ export default function RecipeForm({ onBack }) {
     }
   };
 
-  const handleSuccess = () => {
-    onBack();
-  };
+  const [photoCount, setPhotoCount] = useState(0);
+
+  // PhotoUpload fires this after EVERY photo. Don't exit on it, or adding one
+  // photo ends the flow and you can never add a second.
+  const handlePhotoAdded = () => setPhotoCount((n) => n + 1);
 
   const fmt = (s) => {
     const m = Math.floor(s / 60);
@@ -128,7 +130,21 @@ export default function RecipeForm({ onBack }) {
         <div style={styles.card}>
           <h2 style={styles.stepTitle}>Add Photos</h2>
           {notice && <div style={styles.notice}>{notice}</div>}
-          <PhotoUpload recipeId={recipeId} onSuccess={handleSuccess} />
+
+          {/* PhotoUpload's props are recipe_id and onPhotoAdded. Passing
+              recipeId/onSuccess sent undefined and produced
+              POST /recipes/undefined/photos. */}
+          <PhotoUpload recipe_id={recipeId} onPhotoAdded={handlePhotoAdded} />
+
+          {photoCount > 0 && (
+            <div style={styles.audioNote}>
+              {photoCount} photo{photoCount === 1 ? '' : 's'} added
+            </div>
+          )}
+
+          <button onClick={onBack} style={styles.primaryButton}>
+            {photoCount > 0 ? 'Done' : 'Skip photos'}
+          </button>
         </div>
       )}
     </div>
