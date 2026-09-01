@@ -71,7 +71,7 @@ export default function App() {
 
         {screen === 'detail' && selectedRecipeId && (
           <RecipeDetail 
-            recipeId={selectedRecipeId}
+            recipe_id={selectedRecipeId}
             onBack={() => setScreen('library')}
           />
         )}
