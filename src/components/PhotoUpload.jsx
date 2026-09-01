@@ -1,81 +1,88 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import api from '../services/api';
 
 export default function PhotoUpload({ recipe_id, onPhotoAdded }) {
   const [uploading, setUploading] = useState(false);
-  const [caption, setCaption] = useState('');
+  const [error, setError] = useState('');
+  const inputRef = useRef(null);
 
   const handleFileSelect = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
     setUploading(true);
+    setError('');
 
     const reader = new FileReader();
     reader.onload = async (event) => {
       try {
-        const photo_data = event.target.result;
-        await api.post(`/recipes/${recipe_id}/photos`, { photo_data, caption });
-        setCaption('');
-        e.target.value = '';
+        await api.post(`/recipes/${recipe_id}/photos`, {
+          photo_data: event.target.result,
+          caption: ''
+        });
+        if (inputRef.current) inputRef.current.value = '';
         if (onPhotoAdded) onPhotoAdded();
-      } catch (error) {
-        alert('Error uploading photo: ' + error.message);
+      } catch (err) {
+        setError(err.response?.data?.error || 'Could not upload that photo.');
       }
+      setUploading(false);
+    };
+    reader.onerror = () => {
+      setError('Could not read that file.');
       setUploading(false);
     };
     reader.readAsDataURL(file);
   };
 
   return (
-    <div style={styles.container}>
-      <h3>📸 Add Photo</h3>
+    <div style={styles.wrap}>
+      {/* The native file input shows "No file chosen" and the filename next to
+          it, which can't be styled away. Hide it and drive it from a button. */}
       <input
+        ref={inputRef}
         type="file"
         accept="image/*"
         onChange={handleFileSelect}
+        style={styles.hiddenInput}
+      />
+
+      <button
+        onClick={() => inputRef.current && inputRef.current.click()}
         disabled={uploading}
-        style={styles.fileInput}
-      />
-      <input
-        type="text"
-        placeholder="Photo caption (optional)"
-        value={caption}
-        onChange={(e) => setCaption(e.target.value)}
-        style={styles.captionInput}
-      />
-      <button disabled={uploading} style={styles.uploadButton}>
-        {uploading ? 'Uploading...' : 'Upload Photo'}
+        style={styles.button}
+      >
+        {uploading ? 'Uploading...' : 'Add photo'}
       </button>
+
+      {error && <div style={styles.error}>{error}</div>}
     </div>
   );
 }
 
 const styles = {
-  container: {
-    padding: '1.5rem',
-    backgroundColor: '#ecf0f1',
-    borderRadius: '8px',
-    marginBottom: '1.5rem'
+  wrap: { display: 'flex', flexDirection: 'column', gap: '0.5rem' },
+  hiddenInput: {
+    position: 'absolute',
+    width: '1px',
+    height: '1px',
+    opacity: 0,
+    pointerEvents: 'none'
   },
-  fileInput: {
-    display: 'block',
-    marginBottom: '1rem'
-  },
-  captionInput: {
-    width: '100%',
-    padding: '8px',
-    marginBottom: '1rem',
-    border: '1px solid #bdc3c7',
-    borderRadius: '4px',
-    boxSizing: 'border-box'
-  },
-  uploadButton: {
-    padding: '10px 20px',
-    backgroundColor: '#3498db',
-    color: 'white',
+  button: {
+    padding: '12px 20px',
+    backgroundColor: '#e5e5e5',
+    color: '#1d1d1d',
     border: 'none',
-    borderRadius: '4px',
+    borderRadius: '10px',
+    fontSize: '15px',
+    fontWeight: '600',
     cursor: 'pointer'
+  },
+  error: {
+    backgroundColor: '#ffebee',
+    color: '#c62828',
+    padding: '8px 12px',
+    borderRadius: '8px',
+    fontSize: '13px'
   }
 };

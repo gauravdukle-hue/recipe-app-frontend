@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import api from '../services/api';
 
-export default function PhotoGallery({ recipe_id }) {
+export default function PhotoGallery({ recipe_id, onCount }) {
   const [photos, setPhotos] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -13,20 +13,24 @@ export default function PhotoGallery({ recipe_id }) {
     try {
       const res = await api.get(`/recipes/${recipe_id}/photos`);
       setPhotos(res.data);
+      // Let the parent decide whether to show a Photos section at all.
+      if (onCount) onCount(res.data.length);
     } catch (error) {
       console.error('Error loading photos:', error);
+      if (onCount) onCount(0);
     }
     setLoading(false);
   };
 
-  if (loading) return <p>Loading photos...</p>;
-  if (photos.length === 0) return <p>No photos yet</p>;
+  // No "No photos yet" placeholder — the parent hides the whole section
+  // when there is nothing to show.
+  if (loading || photos.length === 0) return null;
 
   return (
     <div style={styles.gallery}>
       {photos.map((photo) => (
         <div key={photo.id} style={styles.photoCard}>
-          <img src={photo.photo_data} alt={photo.caption} style={styles.img} />
+          <img src={photo.photo_data} alt={photo.caption || ''} style={styles.img} />
           {photo.caption && <p style={styles.caption}>{photo.caption}</p>}
         </div>
       ))}
@@ -39,7 +43,7 @@ const styles = {
     display: 'grid',
     gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
     gap: '1rem',
-    marginBottom: '2rem'
+    marginBottom: '1rem'
   },
   photoCard: {
     borderRadius: '8px',
