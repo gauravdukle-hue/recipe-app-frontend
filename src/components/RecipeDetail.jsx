@@ -3,6 +3,11 @@ import { getRecipe } from '../services/api';
 import PhotoUpload from './PhotoUpload';
 import PhotoGallery from './PhotoGallery';
 
+// Recipe names are typed in a hurry on a tablet, so capitalise for display
+// rather than correcting what was saved. Harmless for Devanagari, which has
+// no case.
+const titleCase = (s) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s);
+
 export default function RecipeDetail({ recipe_id, onBack }) {
   const [recipe, setRecipe] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -31,10 +36,10 @@ export default function RecipeDetail({ recipe_id, onBack }) {
         ← Back
       </button>
 
-      <h1 style={styles.title}>{recipe.title}</h1>
+      <h1 style={styles.title}>{titleCase(recipe.title)}</h1>
       {recipe.cuisine_tag && <p style={styles.cuisine}>🏷️ {recipe.cuisine_tag}</p>}
 
-      <h2>📸 Photos</h2>
+      <h2 style={styles.heading}>📸 Photos</h2>
       <PhotoGallery recipe_id={recipe_id} key={refreshPhotos} />
 
       {recipe.can_edit && (
@@ -44,8 +49,8 @@ export default function RecipeDetail({ recipe_id, onBack }) {
         />
       )}
 
-      <h2>📦 Ingredients ({recipe.ingredients?.length || 0})</h2>
-      <ul>
+      <h2 style={styles.heading}>🥣 Ingredients ({recipe.ingredients?.length || 0})</h2>
+      <ul style={styles.list}>
         {recipe.ingredients?.map((ing, i) => (
           <li key={i}>
             {ing.amount} {ing.unit} {ing.name}
@@ -53,8 +58,8 @@ export default function RecipeDetail({ recipe_id, onBack }) {
         ))}
       </ul>
 
-      <h2>👣 Steps ({recipe.steps?.length || 0})</h2>
-      <ol>
+      <h2 style={styles.heading}>🥄 Steps ({recipe.steps?.length || 0})</h2>
+      <ol style={styles.list}>
         {recipe.steps?.map((step, i) => (
           <li key={i}>{step.instruction}</li>
         ))}
@@ -67,7 +72,22 @@ const styles = {
   container: {
     padding: '2rem',
     maxWidth: '800px',
-    margin: '0 auto'
+    margin: '0 auto',
+    // A parent stylesheet centres everything; the lists were left-aligned
+    // inside centred blocks, which read as ragged. Anchor the whole view left.
+    textAlign: 'left'
+  },
+  heading: {
+    fontSize: '20px',
+    color: '#2c3e50',
+    marginTop: '2rem',
+    marginBottom: '0.75rem'
+  },
+  list: {
+    paddingLeft: '1.5rem',
+    lineHeight: '1.9',
+    fontSize: '17px',
+    margin: 0
   },
   backButton: {
     padding: '8px 16px',
