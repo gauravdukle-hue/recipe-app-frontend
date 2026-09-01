@@ -143,6 +143,29 @@ export default function RecipeDetail({ recipe_id, onBack }) {
           <h1 style={styles.title}>{titleCase(recipe.title)}</h1>
           {recipe.cuisine_tag && <p style={styles.cuisine}>{recipe.cuisine_tag}</p>}
 
+          <div style={styles.reactions}>
+            {[
+              { kind: 'like', icon: '\u{1F44D}', label: 'Like this recipe' },
+              { kind: 'love', icon: '\u2764\uFE0F', label: 'Love this recipe' }
+            ].map(({ kind, icon, label }) => (
+              <button
+                key={kind}
+                onClick={() => react(kind)}
+                aria-label={label}
+                title={label}
+                style={{
+                  ...styles.reactionButton,
+                  ...(reactions.mine.includes(kind) ? styles.reactionActive : {})
+                }}
+              >
+                <span style={styles.reactionIcon}>{icon}</span>
+                {reactions[kind] > 0 && (
+                  <span style={styles.reactionCount}>{reactions[kind]}</span>
+                )}
+              </button>
+            ))}
+          </div>
+
           <h2 style={styles.heading}>Ingredients ({recipe.ingredients?.length || 0})</h2>
           <ul style={styles.list}>
             {recipe.ingredients?.map((ing, i) => (
@@ -183,24 +206,6 @@ export default function RecipeDetail({ recipe_id, onBack }) {
               key={refreshPhotos}
               onCount={setPhotoCount}
             />
-          </div>
-
-          <div style={styles.reactions}>
-            {[
-              { kind: 'like', label: 'Like' },
-              { kind: 'love', label: 'Love' }
-            ].map(({ kind, label }) => (
-              <button
-                key={kind}
-                onClick={() => react(kind)}
-                style={{
-                  ...styles.reactionButton,
-                  ...(reactions.mine.includes(kind) ? styles.reactionActive : {})
-                }}
-              >
-                {label} {reactions[kind] > 0 ? reactions[kind] : ''}
-              </button>
-            ))}
           </div>
 
           <div style={styles.actions}>
@@ -249,7 +254,7 @@ const styles = {
     fontSize: '15px'
   },
   title: { fontSize: '28px', color: '#2c3e50', marginBottom: '0.25rem' },
-  cuisine: { fontSize: '14px', color: '#7f8c8d', marginBottom: '2rem' },
+  cuisine: { fontSize: '14px', color: '#7f8c8d', marginBottom: '1.5rem' },
   heading: {
     fontSize: '20px',
     color: '#2c3e50',
@@ -269,25 +274,29 @@ const styles = {
   meaning: { margin: 0, color: '#555' },
   reactions: {
     display: 'flex',
-    gap: '0.75rem',
-    marginTop: '2.5rem'
+    gap: '0.6rem',
+    marginTop: '-1rem',
+    marginBottom: '1.5rem'
   },
   reactionButton: {
-    padding: '10px 18px',
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '0.4rem',
+    // Comfortable target for older hands on a tablet.
+    padding: '10px 16px',
+    minHeight: '44px',
     backgroundColor: '#f2f2f2',
-    color: '#1d1d1d',
     border: '1px solid #e5e5e5',
-    borderRadius: '20px',
-    fontSize: '15px',
+    borderRadius: '22px',
     cursor: 'pointer',
-    minWidth: '80px'
+    WebkitTapHighlightColor: 'transparent'
   },
   reactionActive: {
     backgroundColor: '#e3f0ff',
-    borderColor: '#007AFF',
-    color: '#0055b3',
-    fontWeight: '600'
+    borderColor: '#007AFF'
   },
+  reactionIcon: { fontSize: '20px', lineHeight: 1 },
+  reactionCount: { fontSize: '15px', fontWeight: '600', color: '#1d1d1d' },
   actions: {
     display: 'flex',
     gap: '0.75rem',
