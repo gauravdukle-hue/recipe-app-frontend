@@ -22,11 +22,17 @@ export default function Login({ onLogin }) {
         response = await login(email, password);
       }
       
-      const token = response.data.token;
-      console.log('Token received:', token ? 'yes' : 'no');
+      // The backend returns the JWT as `auth_token`. Reading `token` here
+      // yielded undefined, which localStorage stored as the 9-character
+      // string "undefined" and sent as `Bearer undefined` on every request.
+      const token = response.data.auth_token || response.data.token;
+
+      if (!token) {
+        setError('Login succeeded but no token was returned. Try again.');
+        return;
+      }
+
       setAuthToken(token);
-      localStorage.setItem('auth_token', token);
-      
       onLogin();
     } catch (err) {
       setError(err.response?.data?.error || 'Something went wrong');
