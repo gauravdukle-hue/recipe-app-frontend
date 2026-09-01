@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import api, { getRecipe } from '../services/api';
+import api, { getRecipe, getReactions, toggleReaction } from '../services/api';
 import PhotoUpload from './PhotoUpload';
 import PhotoGallery from './PhotoGallery';
 
@@ -21,10 +21,38 @@ export default function RecipeDetail({ recipe_id, onBack }) {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [form, setForm] = useState({ title: '', cuisine_tag: '', description: '' });
+  const [reactions, setReactions] = useState({ like: 0, love: 0, mine: [] });
 
   useEffect(() => {
     fetchRecipe();
+    fetchReactions();
   }, [recipe_id]);
+
+  const fetchReactions = async () => {
+    try {
+      const res = await getReactions(recipe_id);
+      setReactions(res.data);
+    } catch {
+      // A failed reaction fetch shouldn't stop the recipe rendering.
+    }
+  };
+
+  const react = async (kind) => {
+    // Optimistic: the count updates immediately, then reconciles with the
+    // server response. A tap that appears to do nothing feels broken.
+    const active = reactions.mine.includes(kind);
+    setReactions((r) => ({
+      ...r,
+      [kind]: Math.max(0, r[kind] + (active ? -1 : 1)),
+      mine: active ? r.mine.filter((m) => m !== kind) : [...r.mine, kind]
+    }));
+    try {
+      const res = await toggleReaction(recipe_id, kind);
+      setReactions(res.data);
+    } catch {
+      fetchReactions();
+    }
+  };
 
   const fetchRecipe = async () => {
     try {
@@ -131,6 +159,20 @@ export default function RecipeDetail({ recipe_id, onBack }) {
             ))}
           </ol>
 
+          {recipe.glossary?.length > 0 && (
+            <>
+              <h2 style={styles.heading}>What the words mean</h2>
+              <dl style={styles.glossary}>
+                {recipe.glossary.map((g, i) => (
+                  <div key={i} style={styles.glossaryRow}>
+                    <dt style={styles.term}>{g.term}</dt>
+                    <dd style={styles.meaning}>{g.meaning}</dd>
+                  </div>
+                ))}
+              </dl>
+            </>
+          )}
+
           {/* The heading only appears once a photo exists. An empty gallery
               with a "No photos yet" placeholder was noise on most recipes.
               The gallery itself stays mounted so it can report the count. */}
@@ -141,6 +183,24 @@ export default function RecipeDetail({ recipe_id, onBack }) {
               key={refreshPhotos}
               onCount={setPhotoCount}
             />
+          </div>
+
+          <div style={styles.reactions}>
+            {[
+              { kind: 'like', label: 'Like' },
+              { kind: 'love', label: 'Love' }
+            ].map(({ kind, label }) => (
+              <button
+                key={kind}
+                onClick={() => react(kind)}
+                style={{
+                  ...styles.reactionButton,
+                  ...(reactions.mine.includes(kind) ? styles.reactionActive : {})
+                }}
+              >
+                {label} {reactions[kind] > 0 ? reactions[kind] : ''}
+              </button>
+            ))}
           </div>
 
           <div style={styles.actions}>
@@ -197,10 +257,41 @@ const styles = {
     marginBottom: '0.75rem'
   },
   list: { paddingLeft: '1.5rem', lineHeight: '1.9', fontSize: '17px', margin: 0 },
+  glossary: { margin: 0, fontSize: '16px' },
+  glossaryRow: {
+    display: 'flex',
+    gap: '0.75rem',
+    padding: '6px 0',
+    borderBottom: '1px solid #f0f0f0',
+    alignItems: 'baseline'
+  },
+  term: { fontWeight: '600', minWidth: '140px', color: '#2c3e50' },
+  meaning: { margin: 0, color: '#555' },
+  reactions: {
+    display: 'flex',
+    gap: '0.75rem',
+    marginTop: '2.5rem'
+  },
+  reactionButton: {
+    padding: '10px 18px',
+    backgroundColor: '#f2f2f2',
+    color: '#1d1d1d',
+    border: '1px solid #e5e5e5',
+    borderRadius: '20px',
+    fontSize: '15px',
+    cursor: 'pointer',
+    minWidth: '80px'
+  },
+  reactionActive: {
+    backgroundColor: '#e3f0ff',
+    borderColor: '#007AFF',
+    color: '#0055b3',
+    fontWeight: '600'
+  },
   actions: {
     display: 'flex',
     gap: '0.75rem',
-    marginTop: '2.5rem',
+    marginTop: '1.5rem',
     flexWrap: 'wrap',
     alignItems: 'flex-start'
   },
