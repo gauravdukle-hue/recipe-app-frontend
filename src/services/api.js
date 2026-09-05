@@ -27,6 +27,7 @@ export const getAuthToken = () => {
 export const login = (email, password) => api.post('/auth/login', { email, password });
 export const signup = (email, password, name) => api.post('/auth/signup', { email, password, name });
 export const loginUser = (email, password) => api.post('/auth/login', { email, password });
+export const googleLogin = (credential) => api.post('/auth/google', { credential });
 export const signupUser = (email, password, name) => api.post('/auth/signup', { email, password, name });
 export const createRecipe = (title, description, cuisine_tag) => api.post('/recipes', { title, description, cuisine_tag });
 export const getRecipes = (view = 'all') => api.get('/recipes', { params: { view } });

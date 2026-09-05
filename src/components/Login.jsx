@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { login, signup, setAuthToken } from '../services/api';
+import { useState, useEffect, useRef } from 'react';
+import { login, signup, setAuthToken, googleLogin } from '../services/api';
 
 export default function Login({ onLogin }) {
   const [isSignup, setIsSignup] = useState(false);
@@ -8,6 +8,54 @@ export default function Login({ onLogin }) {
   const [name, setName] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+
+  const googleDiv = useRef(null);
+
+  // Google Identity Services renders its own button into a div. Its script is
+  // loaded from index.html and may not be ready on first paint, so poll
+  // briefly rather than assume it is there.
+  useEffect(() => {
+    const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+    if (!clientId) return undefined;
+
+    let cancelled = false;
+    let timer = null;
+
+    const render = () => {
+      if (cancelled || !window.google?.accounts?.id || !googleDiv.current) return false;
+      window.google.accounts.id.initialize({
+        client_id: clientId,
+        callback: async (response) => {
+          try {
+            const res = await googleLogin(response.credential);
+            const token = res.data.auth_token;
+            if (!token) {
+              setError('Google sign-in returned no token.');
+              return;
+            }
+            setAuthToken(token);
+            onLogin();
+          } catch (err) {
+            setError(err.response?.data?.details || 'Google sign-in failed.');
+          }
+        }
+      });
+      window.google.accounts.id.renderButton(googleDiv.current, {
+        theme: 'outline',
+        size: 'large',
+        width: 280,
+        text: 'continue_with'
+      });
+      return true;
+    };
+
+    if (!render()) {
+      timer = setInterval(() => { if (render()) clearInterval(timer); }, 300);
+      setTimeout(() => timer && clearInterval(timer), 8000);
+    }
+
+    return () => { cancelled = true; if (timer) clearInterval(timer); };
+  }, [onLogin]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -98,6 +146,14 @@ export default function Login({ onLogin }) {
           </button>
         </form>
 
+        <div style={styles.divider}>
+          <span style={styles.dividerLine} />
+          <span style={styles.dividerText}>or</span>
+          <span style={styles.dividerLine} />
+        </div>
+
+        <div ref={googleDiv} style={styles.googleWrap} />
+
         <div style={styles.toggle}>
           <p style={styles.toggleText}>
             {isSignup ? 'Already have an account?' : "Don't have an account?"}
@@ -115,6 +171,15 @@ export default function Login({ onLogin }) {
 }
 
 const styles = {
+  divider: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '0.75rem',
+    margin: '1.25rem 0'
+  },
+  dividerLine: { flex: 1, height: '1px', backgroundColor: '#e5e5e5' },
+  dividerText: { fontSize: '13px', color: '#999' },
+  googleWrap: { display: 'flex', justifyContent: 'center', minHeight: '44px' },
   container: {
     minHeight: '100vh',
     display: 'flex',
