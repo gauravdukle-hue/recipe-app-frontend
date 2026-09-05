@@ -1,6 +1,10 @@
 import { useState, useEffect } from 'react';
 import { getRecipes } from '../services/api';
 
+// Names are typed in a hurry on a tablet, so capitalise for display rather
+// than correcting what was saved. Harmless for Devanagari, which has no case.
+const titleCase = (s) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s);
+
 export default function RecipeLibrary({ onCreateClick, onSelectRecipe }) {
   const [recipes, setRecipes] = useState([]);
   const [view, setView] = useState('mine');
@@ -27,7 +31,7 @@ export default function RecipeLibrary({ onCreateClick, onSelectRecipe }) {
       <div style={styles.header}>
         <div>
           <h2 style={styles.title}>My Recipes</h2>
-          <p style={styles.subtitle}>{recipes.length} recipes</p>
+          <p style={styles.subtitle}>{recipes.length} {recipes.length === 1 ? 'recipe' : 'recipes'}</p>
         </div>
         <button onClick={onCreateClick} style={styles.createButton}>
           ➕ New Recipe
@@ -67,7 +71,7 @@ export default function RecipeLibrary({ onCreateClick, onSelectRecipe }) {
                 <img src={recipe.photo_url} alt={recipe.title} style={styles.photo} />
               )}
               <div style={styles.cardContent}>
-                <h3 style={styles.recipeTitle}>{recipe.title}</h3>
+                <h3 style={styles.recipeTitle}>{titleCase(recipe.title)}</h3>
                 <p style={styles.cuisine}>{recipe.cuisine_tag || 'Recipe'}</p>
               </div>
             </div>
