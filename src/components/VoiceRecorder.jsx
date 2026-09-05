@@ -5,6 +5,7 @@ import { LANGUAGES, DEFAULT_LANGUAGE } from '../languages';
 export default function VoiceRecorder({ onTranscript }) {
   const [transcript, setTranscript] = useState('');
   const [language, setLanguage] = useState(DEFAULT_LANGUAGE);
+  const [picking, setPicking] = useState(false);
   const { status, start, stop, reset, blob, url, duration, level, error } = useWavRecorder();
 
   const handleSubmit = () => {
@@ -71,23 +72,47 @@ export default function VoiceRecorder({ onTranscript }) {
         </div>
       )}
 
+      {picking && (
+        <div style={styles.modalBack} onClick={() => setPicking(false)}>
+          <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
+            <h3 style={styles.modalTitle}>What language will you speak?</h3>
+            <p style={styles.modalHint}>Recording starts as soon as you choose.</p>
+
+            <div style={styles.langList}>
+              {LANGUAGES.map((l) => (
+                <button
+                  key={l.code}
+                  // start() must run inside this tap. iOS suspends the
+                  // AudioContext if the gesture is spent closing the dialog
+                  // first, which is the failure that killed earlier attempts.
+                  onClick={() => {
+                    setLanguage(l.code);
+                    setPicking(false);
+                    start();
+                  }}
+                  style={{
+                    ...styles.langOption,
+                    ...(l.code === language ? styles.langOptionLast : {})
+                  }}
+                >
+                  {l.label}
+                  {l.code === language && <span style={styles.lastUsed}>last used</span>}
+                </button>
+              ))}
+            </div>
+
+            <button onClick={() => setPicking(false)} style={styles.modalCancel}>
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+
       {error && <div style={styles.error}>{error}</div>}
 
       <div style={styles.toolsBar}>
-        <select
-          value={language}
-          onChange={(e) => setLanguage(e.target.value)}
-          disabled={status === 'recording'}
-          aria-label="Language being spoken"
-          style={styles.langSelect}
-        >
-          {LANGUAGES.map((l) => (
-            <option key={l.code} value={l.code}>{l.label}</option>
-          ))}
-        </select>
-
         <button
-          onClick={status === 'recording' ? stop : start}
+          onClick={status === 'recording' ? stop : () => setPicking(true)}
           style={{
             ...styles.recordButton,
             backgroundColor: status === 'recording' ? '#c62828' : '#e5e5e5',
@@ -212,15 +237,58 @@ const styles = {
     alignItems: 'center',
     backgroundColor: '#fafafa'
   },
-  langSelect: {
-    padding: '16px 12px',
-    minHeight: '52px',
+  modalBack: {
+    position: 'fixed',
+    inset: 0,
+    zIndex: 40,
+    backgroundColor: 'rgba(0,0,0,0.35)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: '1.5rem'
+  },
+  modal: {
+    backgroundColor: 'white',
+    borderRadius: '16px',
+    padding: '1.5rem',
+    width: '100%',
+    maxWidth: '420px',
+    maxHeight: '80vh',
+    display: 'flex',
+    flexDirection: 'column'
+  },
+  modalTitle: { fontSize: '20px', fontWeight: '700', margin: '0 0 0.35rem 0', color: '#1d1d1d' },
+  modalHint: { fontSize: '14px', color: '#888', margin: '0 0 1rem 0' },
+  langList: { overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '0.4rem' },
+  langOption: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    // Large target: the people using this are on tablets, often older.
+    padding: '16px 18px',
+    minHeight: '54px',
+    fontSize: '17px',
+    fontFamily: 'inherit',
+    textAlign: 'left',
+    border: '1px solid #ececec',
+    borderRadius: '10px',
+    backgroundColor: 'white',
+    color: '#1d1d1d',
+    cursor: 'pointer',
+    WebkitTapHighlightColor: 'transparent'
+  },
+  langOptionLast: { borderColor: '#007AFF', backgroundColor: '#f3f8ff' },
+  lastUsed: { fontSize: '12px', color: '#007AFF' },
+  modalCancel: {
+    marginTop: '1rem',
+    padding: '14px',
     fontSize: '16px',
     fontFamily: 'inherit',
-    border: '1px solid #e5e5e5',
-    borderRadius: '8px',
-    backgroundColor: 'white',
-    color: '#1d1d1d'
+    border: 'none',
+    borderRadius: '10px',
+    backgroundColor: '#f0f0f0',
+    color: '#1d1d1d',
+    cursor: 'pointer'
   },
   recordButton: {
     minWidth: '140px',
