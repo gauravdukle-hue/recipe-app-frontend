@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import api, { getRecipe, getReactions, toggleReaction } from '../services/api';
+import api, { getRecipe, getReactions, toggleReaction, getRecipeAudio } from '../services/api';
 import PhotoUpload from './PhotoUpload';
 import PhotoGallery from './PhotoGallery';
 
@@ -22,11 +22,34 @@ export default function RecipeDetail({ recipe_id, onBack }) {
   const [error, setError] = useState('');
   const [form, setForm] = useState({ title: '', cuisine_tag: '', description: '' });
   const [reactions, setReactions] = useState({ like: 0, love: 0, mine: [] });
+  const [audio, setAudio] = useState([]);
 
   useEffect(() => {
     fetchRecipe();
     fetchReactions();
+    fetchAudio();
   }, [recipe_id]);
+
+  const fetchAudio = async () => {
+    try {
+      const res = await getRecipeAudio(recipe_id);
+      setAudio(res.data);
+    } catch {
+      // Status is a nicety; never let it stop the recipe rendering.
+    }
+  };
+
+  // A recipe whose text is still the placeholder is waiting on, or has failed,
+  // transcription. Say so plainly instead of showing the placeholder itself.
+  const pending = /transcription pending/i.test(recipe?.description || '');
+  const rec = audio[0];
+  const transcriptionNote = !pending || !rec
+    ? null
+    : rec.transcribe_error
+      ? { tone: 'bad', text: rec.transcribe_error }
+      : rec.transcribed_at
+        ? { tone: 'bad', text: 'Transcription finished but produced no text.' }
+        : { tone: 'wait', text: 'Transcribing the recording. This usually takes under a minute.' };
 
   const fetchReactions = async () => {
     try {
@@ -141,7 +164,11 @@ export default function RecipeDetail({ recipe_id, onBack }) {
       ) : (
         <>
           <h1 style={styles.title}>{titleCase(recipe.title)}</h1>
-          {recipe.cuisine_tag && <p style={styles.cuisine}>{recipe.cuisine_tag}</p>}
+          <p style={styles.cuisine}>
+            {[recipe.cuisine_tag, recipe.owner_name && `Recorded by ${recipe.owner_name}`]
+              .filter(Boolean)
+              .join(' \u00B7 ')}
+          </p>
 
           <div style={styles.reactions}>
             {[
@@ -165,6 +192,17 @@ export default function RecipeDetail({ recipe_id, onBack }) {
               </button>
             ))}
           </div>
+
+          {transcriptionNote && (
+            <div
+              style={{
+                ...styles.note,
+                ...(transcriptionNote.tone === 'bad' ? styles.noteBad : styles.noteWait)
+              }}
+            >
+              {transcriptionNote.text}
+            </div>
+          )}
 
           <h2 style={styles.heading}>Ingredients ({recipe.ingredients?.length || 0})</h2>
           <ul style={styles.list}>
@@ -262,6 +300,15 @@ const styles = {
     marginBottom: '0.75rem'
   },
   list: { paddingLeft: '1.5rem', lineHeight: '1.9', fontSize: '17px', margin: 0 },
+  note: {
+    padding: '14px 16px',
+    borderRadius: '10px',
+    fontSize: '15px',
+    lineHeight: 1.5,
+    marginBottom: '0.5rem'
+  },
+  noteWait: { backgroundColor: '#eef4fb', color: '#20486e' },
+  noteBad: { backgroundColor: '#fdf0e6', color: '#8a4b00' },
   glossary: { margin: 0, fontSize: '16px' },
   glossaryRow: {
     display: 'flex',

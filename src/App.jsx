@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { getAuthToken, setAuthToken } from './services/api';
+import api, { getAuthToken, setAuthToken } from './services/api';
 import Login from './components/Login';
 import RecipeForm from './components/RecipeForm';
 import RecipeLibrary from './components/RecipeLibrary';
@@ -11,6 +11,7 @@ export default function App() {
   const [selectedRecipeId, setSelectedRecipeId] = useState(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [userName, setUserName] = useState('');
 
   useEffect(() => {
     // Check if token exists in localStorage on mount
@@ -35,6 +36,18 @@ export default function App() {
     setScreen('library');
   };
 
+  // Google supplies the name at sign-in, so this is filled in without anyone
+  // typing it. Failure is silent — a missing greeting is not worth an error.
+  useEffect(() => {
+    if (!isLoggedIn) {
+      setUserName('');
+      return;
+    }
+    api.get('/auth/me')
+      .then((res) => setUserName(res.data.name || ''))
+      .catch(() => setUserName(''));
+  }, [isLoggedIn]);
+
   const handleSelectRecipe = (recipeId) => {
     setSelectedRecipeId(recipeId);
     setScreen('detail');
@@ -52,9 +65,12 @@ export default function App() {
         <h1 onClick={() => setScreen('library')} style={styles.logo}>
           🍽️ Family Recipes
         </h1>
-        <button onClick={handleLogout} style={styles.logoutButton}>
-          Logout
-        </button>
+        <div style={styles.navRight}>
+          {userName && <span style={styles.greeting}>Hi, {userName.split(' ')[0]}</span>}
+          <button onClick={handleLogout} style={styles.logoutButton}>
+            Logout
+          </button>
+        </div>
       </nav>
 
       <div style={styles.content}>
@@ -81,6 +97,8 @@ export default function App() {
 }
 
 const styles = {
+  navRight: { display: 'flex', alignItems: 'center', gap: '0.9rem' },
+  greeting: { fontSize: '15px', color: '#555' },
   app: { 
     minHeight: '100vh', 
     backgroundColor: '#fafafa',
