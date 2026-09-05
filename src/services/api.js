@@ -32,6 +32,7 @@ export const signupUser = (email, password, name) => api.post('/auth/signup', { 
 export const createRecipe = (title, description, cuisine_tag) => api.post('/recipes', { title, description, cuisine_tag });
 export const getRecipes = (view = 'all') => api.get('/recipes', { params: { view } });
 export const getRecipe = (id) => api.get(`/recipes/${id}`);
+export const deleteRecipe = (id) => api.delete(`/recipes/${id}`);
 export const getRecipeDetail = (id) => api.get(`/recipes/${id}`);
 export const uploadPhoto = (recipe_id, photo_data, caption) => api.post(`/recipes/${recipe_id}/photos`, { photo_data, caption });
 

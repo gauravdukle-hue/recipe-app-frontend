@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import api, { getRecipe, getReactions, toggleReaction, getRecipeAudio } from '../services/api';
+import api, { getRecipe, getReactions, toggleReaction, getRecipeAudio, deleteRecipe } from '../services/api';
 import PhotoUpload from './PhotoUpload';
 import PhotoGallery from './PhotoGallery';
 
@@ -23,6 +23,8 @@ export default function RecipeDetail({ recipe_id, onBack }) {
   const [form, setForm] = useState({ title: '', cuisine_tag: '', description: '' });
   const [reactions, setReactions] = useState({ like: 0, love: 0, mine: [] });
   const [audio, setAudio] = useState([]);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     fetchRecipe();
@@ -114,6 +116,18 @@ export default function RecipeDetail({ recipe_id, onBack }) {
     setSaving(false);
   };
 
+  const remove = async () => {
+    setDeleting(true);
+    try {
+      await deleteRecipe(recipe_id);
+      onBack();
+    } catch (err) {
+      setError(err.response?.data?.error || 'Could not delete this recipe.');
+      setDeleting(false);
+      setConfirmDelete(false);
+    }
+  };
+
   if (loading) return <p style={{ padding: '2rem' }}>Loading recipe...</p>;
   if (!recipe) return <p style={{ padding: '2rem' }}>{error || 'Recipe not found'}</p>;
 
@@ -121,7 +135,7 @@ export default function RecipeDetail({ recipe_id, onBack }) {
     <div style={styles.container}>
       <button onClick={onBack} style={styles.backButton}>← Back</button>
 
-      {editing ? (
+      {editing && recipe.can_edit ? (
         <div style={styles.editBox}>
           <label style={styles.label}>Name</label>
           <input
@@ -261,10 +275,47 @@ export default function RecipeDetail({ recipe_id, onBack }) {
               </button>
             )}
 
-            <button onClick={startEdit} style={styles.secondaryButton}>
-              Edit recipe
-            </button>
+            {/* The backend already refuses an edit from anyone but the owner.
+                Hiding the button means people find that out now rather than
+                after retyping a whole recipe. */}
+            {recipe.can_edit && (
+              <button onClick={startEdit} style={styles.secondaryButton}>
+                Edit recipe
+              </button>
+            )}
           </div>
+
+          {/* Kept apart from the other actions and deliberately quiet. Older
+              relatives on tablets scroll past these buttons, and a recording
+              can be the only one anybody made of a person cooking. */}
+          {recipe.can_edit && (
+            <div style={styles.dangerZone}>
+              {confirmDelete ? (
+                <div style={styles.confirmBox}>
+                  <p style={styles.confirmText}>
+                    Delete <strong>{titleCase(recipe.title)}</strong>? The recording goes with it.
+                  </p>
+                  <div style={styles.confirmRow}>
+                    <button
+                      onClick={() => setConfirmDelete(false)}
+                      style={styles.secondaryButton}
+                    >
+                      Keep it
+                    </button>
+                    <button onClick={remove} disabled={deleting} style={styles.deleteConfirm}>
+                      {deleting ? 'Deleting...' : 'Yes, delete'}
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <button onClick={() => setConfirmDelete(true)} style={styles.deleteLink}>
+                  Delete this recipe
+                </button>
+              )}
+            </div>
+          )}
+
+          {error && <div style={styles.error}>{error}</div>}
         </>
       )}
     </div>
@@ -350,6 +401,37 @@ const styles = {
     marginTop: '1.5rem',
     flexWrap: 'wrap',
     alignItems: 'flex-start'
+  },
+  dangerZone: {
+    marginTop: '3rem',
+    paddingTop: '1.25rem',
+    borderTop: '1px solid #f0f0f0'
+  },
+  deleteLink: {
+    background: 'none',
+    border: 'none',
+    color: '#9a9a9a',
+    fontSize: '14px',
+    cursor: 'pointer',
+    padding: '8px 0',
+    textDecoration: 'underline'
+  },
+  confirmBox: {
+    backgroundColor: '#fdf0e6',
+    borderRadius: '10px',
+    padding: '16px'
+  },
+  confirmText: { margin: '0 0 0.9rem 0', fontSize: '15px', color: '#8a4b00' },
+  confirmRow: { display: 'flex', gap: '0.75rem' },
+  deleteConfirm: {
+    padding: '12px 20px',
+    backgroundColor: '#c62828',
+    color: 'white',
+    border: 'none',
+    borderRadius: '10px',
+    fontSize: '15px',
+    fontWeight: '600',
+    cursor: 'pointer'
   },
   editBox: { display: 'flex', flexDirection: 'column' },
   label: {
