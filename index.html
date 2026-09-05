@@ -3,14 +3,33 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+
     <title>Family Recipes</title>
-    <!-- Google Identity Services. Loaded here rather than injected at runtime
-         so the button is ready as early as possible on the login screen. -->
+    <meta name="description" content="A private collection of family recipes." />
+
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <meta name="theme-color" content="#c1663e" />
+
+    <!-- iOS ignores the manifest for home-screen behaviour and uses these. -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="Recipes" />
+    <link rel="apple-touch-icon" href="/icon-180.png" />
+
+    <!-- Google Identity Services, loaded here so the sign-in button is ready
+         as early as possible on the login screen. -->
     <script src="https://accounts.google.com/gsi/client" async defer></script>
   </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js').catch(() => {});
+        });
+      }
+    </script>
   </body>
 </html>
