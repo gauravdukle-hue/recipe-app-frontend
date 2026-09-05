@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import api, { getAuthToken, setAuthToken } from './services/api';
 import Login from './components/Login';
+import Welcome from './components/Welcome';
 import RecipeForm from './components/RecipeForm';
 import RecipeLibrary from './components/RecipeLibrary';
 import RecipeDetail from './components/RecipeDetail';
@@ -12,6 +13,7 @@ export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [loading, setLoading] = useState(true);
   const [userName, setUserName] = useState('');
+  const [showWelcome, setShowWelcome] = useState(false);
 
   useEffect(() => {
     // Check if token exists in localStorage on mount
@@ -27,6 +29,7 @@ export default function App() {
   const handleLogin = () => {
     setIsLoggedIn(true);
     setScreen('library');
+    setShowWelcome(true);
   };
 
   const handleLogout = () => {
@@ -57,6 +60,12 @@ export default function App() {
 
   if (!isLoggedIn) {
     return <Login onLogin={handleLogin} />;
+  }
+
+  // Shown once on sign-in only — not on every visit with a stored token, which
+  // would make it an obstacle rather than a welcome.
+  if (showWelcome) {
+    return <Welcome name={userName} onDone={() => setShowWelcome(false)} />;
   }
 
   return (

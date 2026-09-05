@@ -5,12 +5,6 @@ import { getRecipes } from '../services/api';
 // than correcting what was saved. Harmless for Devanagari, which has no case.
 const titleCase = (s) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s);
 
-const greetingFor = (hour) => {
-  if (hour < 12) return 'Good morning';
-  if (hour < 17) return 'Good afternoon';
-  return 'Good evening';
-};
-
 export default function RecipeLibrary({ onCreateClick, onSelectRecipe, userName }) {
   const [recipes, setRecipes] = useState([]);
   const [view, setView] = useState('mine');
@@ -40,14 +34,11 @@ export default function RecipeLibrary({ onCreateClick, onSelectRecipe, userName 
               wrong on two of the three. */}
           {view === 'mine' ? (
             <>
-              <h2 style={styles.title}>
-                {greetingFor(new Date().getHours())}
-                {userName ? `, ${userName.split(' ')[0]}` : ''}
-              </h2>
+              <h2 style={styles.title}>My Recipes</h2>
               <p style={styles.subtitle}>
                 {recipes.length === 0
                   ? 'No recipes yet — record your first one'
-                  : `${recipes.length} ${recipes.length === 1 ? 'recipe' : 'recipes'} of yours`}
+                  : `${recipes.length} ${recipes.length === 1 ? 'recipe' : 'recipes'}`}
               </p>
             </>
           ) : (
