@@ -77,10 +77,13 @@ const styles = {
     animation: 'riseIn 600ms ease both'
   },
   greeting: {
-    fontSize: '34px',
+    fontSize: '32px',
     fontWeight: '400',
     color: '#8a8a8e',
     margin: 0,
+    // App.css sets a tight global line-height on headings, which let the name
+    // climb into this line. Both are set explicitly here.
+    lineHeight: 1.25,
     letterSpacing: '-0.02em',
     animation: 'riseIn 600ms ease both'
   },
@@ -88,7 +91,8 @@ const styles = {
     fontSize: '46px',
     fontWeight: '700',
     color: '#1d1d1d',
-    margin: '0.15rem 0 0 0',
+    margin: '0.35rem 0 0 0',
+    lineHeight: 1.15,
     letterSpacing: '-0.03em',
     animation: 'riseIn 600ms ease both'
   },
