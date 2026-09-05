@@ -76,6 +76,7 @@ export default function App() {
       <div style={styles.content}>
         {screen === 'library' && (
           <RecipeLibrary 
+            userName={userName}
             onCreateClick={() => setScreen('create')}
             onSelectRecipe={handleSelectRecipe}
           />

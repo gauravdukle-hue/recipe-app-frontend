@@ -5,7 +5,13 @@ import { getRecipes } from '../services/api';
 // than correcting what was saved. Harmless for Devanagari, which has no case.
 const titleCase = (s) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s);
 
-export default function RecipeLibrary({ onCreateClick, onSelectRecipe }) {
+const greetingFor = (hour) => {
+  if (hour < 12) return 'Good morning';
+  if (hour < 17) return 'Good afternoon';
+  return 'Good evening';
+};
+
+export default function RecipeLibrary({ onCreateClick, onSelectRecipe, userName }) {
   const [recipes, setRecipes] = useState([]);
   const [view, setView] = useState('mine');
   const [loading, setLoading] = useState(true);
@@ -30,8 +36,30 @@ export default function RecipeLibrary({ onCreateClick, onSelectRecipe }) {
     <div style={styles.container}>
       <div style={styles.header}>
         <div>
-          <h2 style={styles.title}>My Recipes</h2>
-          <p style={styles.subtitle}>{recipes.length} {recipes.length === 1 ? 'recipe' : 'recipes'}</p>
+          {/* The heading used to read "My Recipes" on every tab, which was
+              wrong on two of the three. */}
+          {view === 'mine' ? (
+            <>
+              <h2 style={styles.title}>
+                {greetingFor(new Date().getHours())}
+                {userName ? `, ${userName.split(' ')[0]}` : ''}
+              </h2>
+              <p style={styles.subtitle}>
+                {recipes.length === 0
+                  ? 'No recipes yet — record your first one'
+                  : `${recipes.length} ${recipes.length === 1 ? 'recipe' : 'recipes'} of yours`}
+              </p>
+            </>
+          ) : (
+            <>
+              <h2 style={styles.title}>
+                {view === 'shared' ? 'Shared with you' : 'All recipes'}
+              </h2>
+              <p style={styles.subtitle}>
+                {recipes.length} {recipes.length === 1 ? 'recipe' : 'recipes'}
+              </p>
+            </>
+          )}
         </div>
         <button onClick={onCreateClick} style={styles.createButton}>
           ➕ New Recipe
@@ -72,7 +100,11 @@ export default function RecipeLibrary({ onCreateClick, onSelectRecipe }) {
               )}
               <div style={styles.cardContent}>
                 <h3 style={styles.recipeTitle}>{titleCase(recipe.title)}</h3>
-                <p style={styles.cuisine}>{recipe.cuisine_tag || 'Recipe'}</p>
+                <p style={styles.cuisine}>
+                  {[recipe.cuisine_tag || 'Recipe', view !== 'mine' && recipe.owner_name]
+                    .filter(Boolean)
+                    .join(' \u00B7 ')}
+                </p>
               </div>
             </div>
           ))}
@@ -85,7 +117,7 @@ export default function RecipeLibrary({ onCreateClick, onSelectRecipe }) {
 const styles = {
   container: { maxWidth: '1200px', margin: '0 auto' },
   header: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '2rem' },
-  title: { fontSize: '28px', fontWeight: '700', color: '#1d1d1d', margin: '0 0 0.5rem 0' },
+  title: { fontSize: '28px', fontWeight: '700', color: '#1d1d1d', margin: '0 0 0.35rem 0', letterSpacing: '-0.02em' },
   subtitle: { fontSize: '14px', color: '#999', margin: 0 },
   createButton: { padding: '10px 20px', backgroundColor: '#007AFF', color: 'white', fontSize: '15px', fontWeight: '600', border: 'none', borderRadius: '10px', cursor: 'pointer', transition: 'all 0.2s' },
   tabs: { display: 'flex', gap: '0.5rem', marginBottom: '2rem' },
