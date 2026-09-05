@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import api, { getRecipe, getReactions, toggleReaction, getRecipeAudio, deleteRecipe } from '../services/api';
+import api, { getRecipe, getReactions, toggleReaction, getRecipeAudio, deleteRecipe, getShares, shareRecipe, unshareRecipe } from '../services/api';
 import PhotoUpload from './PhotoUpload';
 import PhotoGallery from './PhotoGallery';
 
@@ -25,12 +25,52 @@ export default function RecipeDetail({ recipe_id, onBack }) {
   const [audio, setAudio] = useState([]);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [shares, setShares] = useState([]);
+  const [shareEmail, setShareEmail] = useState('');
+  const [shareBusy, setShareBusy] = useState(false);
+  const [shareNote, setShareNote] = useState('');
 
   useEffect(() => {
     fetchRecipe();
     fetchReactions();
     fetchAudio();
+    fetchShares();
   }, [recipe_id]);
+
+  const fetchShares = async () => {
+    try {
+      const res = await getShares(recipe_id);
+      setShares(res.data);
+    } catch {
+      // Only the owner may list shares; anyone else simply sees no panel.
+    }
+  };
+
+  const addShare = async () => {
+    const email = shareEmail.trim();
+    if (!email) return;
+    setShareBusy(true);
+    setShareNote('');
+    try {
+      const res = await shareRecipe(recipe_id, email);
+      setShareEmail('');
+      setShareNote(`Shared with ${res.data.name || email}`);
+      fetchShares();
+    } catch (err) {
+      setShareNote(err.response?.data?.error || 'Could not share this recipe.');
+    }
+    setShareBusy(false);
+  };
+
+  const removeShare = async (userId) => {
+    try {
+      await unshareRecipe(recipe_id, userId);
+      setShareNote('');
+      fetchShares();
+    } catch {
+      setShareNote('Could not update sharing.');
+    }
+  };
 
   const fetchAudio = async () => {
     try {
@@ -285,6 +325,45 @@ export default function RecipeDetail({ recipe_id, onBack }) {
             )}
           </div>
 
+          {recipe.can_edit && (
+            <div style={styles.shareBox}>
+              <h2 style={styles.heading}>Shared with</h2>
+
+              {shares.length === 0 ? (
+                <p style={styles.shareEmpty}>Only you can see this recipe.</p>
+              ) : (
+                <ul style={styles.shareList}>
+                  {shares.map((s) => (
+                    <li key={s.id} style={styles.shareRow}>
+                      <span>
+                        <strong>{s.name}</strong>{' '}
+                        <span style={styles.shareEmail}>{s.email}</span>
+                      </span>
+                      <button onClick={() => removeShare(s.id)} style={styles.shareRemove}>
+                        Remove
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+
+              <div style={styles.shareAdd}>
+                <input
+                  type="email"
+                  value={shareEmail}
+                  onChange={(e) => setShareEmail(e.target.value)}
+                  placeholder="Their email address"
+                  style={styles.shareInput}
+                />
+                <button onClick={addShare} disabled={shareBusy} style={styles.secondaryButton}>
+                  {shareBusy ? 'Sharing...' : 'Share'}
+                </button>
+              </div>
+
+              {shareNote && <p style={styles.shareNote}>{shareNote}</p>}
+            </div>
+          )}
+
           {/* Kept apart from the other actions and deliberately quiet. Older
               relatives on tablets scroll past these buttons, and a recording
               can be the only one anybody made of a person cooking. */}
@@ -402,6 +481,40 @@ const styles = {
     flexWrap: 'wrap',
     alignItems: 'flex-start'
   },
+  shareBox: { marginTop: '2.5rem' },
+  shareEmpty: { fontSize: '15px', color: '#888', margin: '0 0 1rem 0' },
+  shareList: { listStyle: 'none', padding: 0, margin: '0 0 1rem 0' },
+  shareRow: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: '10px 0',
+    borderBottom: '1px solid #f2f2f2',
+    fontSize: '15px',
+    gap: '1rem'
+  },
+  shareEmail: { color: '#999', fontSize: '13px' },
+  shareRemove: {
+    background: 'none',
+    border: 'none',
+    color: '#9a9a9a',
+    fontSize: '14px',
+    cursor: 'pointer',
+    textDecoration: 'underline',
+    flexShrink: 0
+  },
+  shareAdd: { display: 'flex', gap: '0.6rem', flexWrap: 'wrap' },
+  shareInput: {
+    flex: 1,
+    minWidth: '200px',
+    padding: '12px 14px',
+    border: '1px solid #e5e5e5',
+    borderRadius: '10px',
+    fontSize: '16px',
+    fontFamily: 'inherit',
+    boxSizing: 'border-box'
+  },
+  shareNote: { fontSize: '14px', color: '#666', marginTop: '0.75rem' },
   dangerZone: {
     marginTop: '3rem',
     paddingTop: '1.25rem',
