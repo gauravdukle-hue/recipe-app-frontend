@@ -39,9 +39,8 @@ const PenIcon = () => (
   </svg>
 );
 
-export default function RecipeLibrary({ onCreateClick, onSelectRecipe }) {
+export default function RecipeLibrary({ onCreateClick, onSelectRecipe, view = 'mine', onViewChange }) {
   const [recipes, setRecipes] = useState([]);
-  const [view, setView] = useState('mine');
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -94,7 +93,7 @@ export default function RecipeLibrary({ onCreateClick, onSelectRecipe }) {
         {TABS.map((t) => (
           <button
             key={t.key}
-            onClick={() => setView(t.key)}
+            onClick={() => onViewChange && onViewChange(t.key)}
             style={{ ...styles.tab, ...(view === t.key ? styles.tabOn : {}) }}
           >
             {t.label}
@@ -138,6 +137,25 @@ export default function RecipeLibrary({ onCreateClick, onSelectRecipe }) {
                 {view !== 'mine' && recipe.owner_name && (
                   <span style={styles.cardBy}>{recipe.owner_name}</span>
                 )}
+
+                {/* Pushed to the bottom so cards of different heights still
+                    line their counts up. */}
+                <span style={styles.cardFoot}>
+                  <span style={styles.stat}>
+                    {recipe.ingredient_count || 0} ingredient
+                    {Number(recipe.ingredient_count) === 1 ? '' : 's'}
+                  </span>
+                  {(Number(recipe.like_count) > 0 || Number(recipe.love_count) > 0) && (
+                    <span style={styles.reactions}>
+                      {Number(recipe.like_count) > 0 && (
+                        <span style={styles.stat}>{'\u{1F44D}'} {recipe.like_count}</span>
+                      )}
+                      {Number(recipe.love_count) > 0 && (
+                        <span style={styles.stat}>{'\u2764\uFE0F'} {recipe.love_count}</span>
+                      )}
+                    </span>
+                  )}
+                </span>
               </button>
             </li>
           ))}
@@ -293,6 +311,17 @@ const styles = {
   },
   cardMeta: { fontFamily: sans, fontSize: '13px', color: MUTED },
   cardBy: { fontFamily: sans, fontSize: '13px', color: MUTED, marginTop: '2px' },
+  cardFoot: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    gap: '0.75rem',
+    width: '100%',
+    marginTop: 'auto',
+    paddingTop: '14px'
+  },
+  reactions: { display: 'flex', gap: '0.6rem' },
+  stat: { fontFamily: sans, fontSize: '12px', color: MUTED },
   badge: {
     fontFamily: sans,
     fontSize: '12px',

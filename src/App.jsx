@@ -12,15 +12,21 @@ export default function App() {
   // library — exactly when you reload most, waiting on a transcription.
   // The hash keeps your place and makes the browser Back button work.
   const readHash = () => {
-    const m = (window.location.hash || '').match(/^#\/recipe\/(\d+)/);
-    if (m) return { screen: 'detail', id: Number(m[1]) };
-    if ((window.location.hash || '').startsWith('#/new')) return { screen: 'create', id: null };
-    return { screen: 'library', id: null };
+    const h = window.location.hash || '';
+    const m = h.match(/^#\/recipe\/(\d+)/);
+    if (m) return { screen: 'detail', id: Number(m[1]), view: 'mine' };
+    if (h.startsWith('#/new')) return { screen: 'create', id: null, view: 'mine' };
+    // The tab lives in the URL too, so a refresh keeps you on Everyone rather
+    // than bouncing back to Mine.
+    const tab = h.replace('#/', '');
+    const view = ['mine', 'shared', 'all'].includes(tab) ? tab : 'mine';
+    return { screen: 'library', id: null, view };
   };
 
   const initial = readHash();
   const [screen, setScreen] = useState(initial.screen);
   const [selectedRecipeId, setSelectedRecipeId] = useState(initial.id);
+  const [view, setView] = useState(initial.view);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [loading, setLoading] = useState(true);
   const [userName, setUserName] = useState('');
@@ -69,15 +75,21 @@ export default function App() {
       const next = readHash();
       setScreen(next.screen);
       setSelectedRecipeId(next.id);
+      if (next.screen === 'library') setView(next.view);
     };
     window.addEventListener('hashchange', onHash);
     return () => window.removeEventListener('hashchange', onHash);
   }, []);
 
   const goLibrary = () => {
-    window.location.hash = '';
+    window.location.hash = view === 'mine' ? '' : `#/${view}`;
     setSelectedRecipeId(null);
     setScreen('library');
+  };
+
+  const changeView = (next) => {
+    window.location.hash = next === 'mine' ? '' : `#/${next}`;
+    setView(next);
   };
 
   const handleSelectRecipe = (recipeId) => {
@@ -115,6 +127,8 @@ export default function App() {
       <div style={styles.content}>
         {screen === 'library' && (
           <RecipeLibrary 
+            view={view}
+            onViewChange={changeView}
             onCreateClick={(mode) => { setCreateMode(mode); window.location.hash = '#/new'; setScreen('create'); }}
             onSelectRecipe={handleSelectRecipe}
           />
