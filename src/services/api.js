@@ -64,6 +64,8 @@ export const toggleReaction = (recipe_id, reaction) =>
   api.post(`/recipes/${recipe_id}/reactions`, { reaction });
 
 export const getRecipeAudio = (recipe_id) => api.get(`/audio/${recipe_id}`);
+export const retryTranscription = (audio_id, language) =>
+  api.post(`/audio/${audio_id}/retry`, language ? { language } : {});
 export const getAudioFile = (audio_id) => api.get(`/audio/file/${audio_id}`);
 
 export default api;

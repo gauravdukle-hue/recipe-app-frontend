@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import api, { getRecipe, getReactions, toggleReaction, getRecipeAudio, deleteRecipe, getShares, shareRecipe, unshareRecipe } from '../services/api';
+import api, { getRecipe, getReactions, toggleReaction, getRecipeAudio, deleteRecipe, getShares, shareRecipe, unshareRecipe, retryTranscription } from '../services/api';
 import PhotoUpload from './PhotoUpload';
 import PhotoGallery from './PhotoGallery';
 
@@ -29,6 +29,7 @@ export default function RecipeDetail({ recipe_id, onBack }) {
   const [shareEmail, setShareEmail] = useState('');
   const [shareBusy, setShareBusy] = useState(false);
   const [shareNote, setShareNote] = useState('');
+  const [retrying, setRetrying] = useState(false);
 
   useEffect(() => {
     fetchRecipe();
@@ -156,6 +157,18 @@ export default function RecipeDetail({ recipe_id, onBack }) {
     setSaving(false);
   };
 
+  const retryTranscript = async () => {
+    if (!rec) return;
+    setRetrying(true);
+    try {
+      await retryTranscription(rec.id);
+      await fetchAudio();
+    } catch {
+      setError('Could not queue that recording again.');
+    }
+    setRetrying(false);
+  };
+
   const remove = async () => {
     setDeleting(true);
     try {
@@ -254,7 +267,12 @@ export default function RecipeDetail({ recipe_id, onBack }) {
                 ...(transcriptionNote.tone === 'bad' ? styles.noteBad : styles.noteWait)
               }}
             >
-              {transcriptionNote.text}
+              <span>{transcriptionNote.text}</span>
+              {transcriptionNote.tone === 'bad' && recipe.can_edit && (
+                <button onClick={retryTranscript} disabled={retrying} style={styles.retryButton}>
+                  {retrying ? 'Queuing…' : 'Try again'}
+                </button>
+              )}
             </div>
           )}
 
@@ -430,7 +448,21 @@ const styles = {
     marginBottom: '0.75rem'
   },
   list: { paddingLeft: '1.5rem', lineHeight: '1.9', fontSize: '17px', margin: 0 },
+  retryButton: {
+    marginTop: '0.75rem',
+    alignSelf: 'flex-start',
+    padding: '10px 16px',
+    backgroundColor: 'white',
+    color: '#8a4b00',
+    border: '1px solid #e0c9ae',
+    borderRadius: '8px',
+    fontSize: '14px',
+    fontWeight: '600',
+    cursor: 'pointer'
+  },
   note: {
+    display: 'flex',
+    flexDirection: 'column',
     padding: '14px 16px',
     borderRadius: '10px',
     fontSize: '15px',
