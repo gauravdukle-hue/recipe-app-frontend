@@ -3,7 +3,7 @@ import { createRecipe, uploadAudio } from '../services/api';
 import VoiceRecorder from './VoiceRecorder';
 import PhotoUpload from './PhotoUpload';
 
-export default function RecipeForm({ onBack }) {
+export default function RecipeForm({ onBack, mode = 'record' }) {
   const [step, setStep] = useState(1);
   const [description, setDescription] = useState('');
   const [audioBlob, setAudioBlob] = useState(null);
@@ -82,7 +82,7 @@ export default function RecipeForm({ onBack }) {
       <button onClick={onBack} style={styles.backButton}>← Back</button>
 
       {step === 1 && (
-        <VoiceRecorder onTranscript={handleTranscript} />
+        <VoiceRecorder onTranscript={handleTranscript} mode={mode} />
       )}
 
       {step === 2 && (

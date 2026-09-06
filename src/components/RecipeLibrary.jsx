@@ -23,6 +23,22 @@ const EMPTY = {
   all: 'No recipes in the collection yet.'
 };
 
+const MicIcon = () => (
+  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+    <rect x="9" y="2" width="6" height="12" rx="3" stroke="currentColor" strokeWidth="1.8" />
+    <path d="M5 11a7 7 0 0 0 14 0M12 18v4" stroke="currentColor" strokeWidth="1.8"
+          strokeLinecap="round" />
+  </svg>
+);
+
+const PenIcon = () => (
+  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+    <path d="M4 20h4L20 8a2.8 2.8 0 0 0-4-4L4 16v4z" stroke="currentColor" strokeWidth="1.8"
+          strokeLinejoin="round" />
+    <path d="M14.5 5.5 18.5 9.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+  </svg>
+);
+
 export default function RecipeLibrary({ onCreateClick, onSelectRecipe }) {
   const [recipes, setRecipes] = useState([]);
   const [view, setView] = useState('mine');
@@ -53,9 +69,16 @@ export default function RecipeLibrary({ onCreateClick, onSelectRecipe }) {
             {loading ? ' ' : `${recipes.length} ${recipes.length === 1 ? 'recipe' : 'recipes'}`}
           </p>
         </div>
-        <button onClick={onCreateClick} style={styles.newButton}>
-          Record a recipe
-        </button>
+        <div style={styles.headActions}>
+          <button onClick={() => onCreateClick('record')} style={styles.newButton}>
+            <MicIcon />
+            Record a recipe
+          </button>
+          <button onClick={() => onCreateClick('type')} style={styles.typeButton}>
+            <PenIcon />
+            Type a recipe
+          </button>
+        </div>
       </header>
 
       <nav style={styles.tabs}>
@@ -76,9 +99,16 @@ export default function RecipeLibrary({ onCreateClick, onSelectRecipe }) {
         <div style={styles.empty}>
           <p style={styles.emptyText}>{EMPTY[view]}</p>
           {view === 'mine' && (
-            <button onClick={onCreateClick} style={styles.emptyButton}>
-              Record a recipe
-            </button>
+            <div style={styles.emptyActions}>
+              <button onClick={() => onCreateClick('record')} style={styles.emptyButton}>
+                <MicIcon />
+                Record a recipe
+              </button>
+              <button onClick={() => onCreateClick('type')} style={styles.typeButton}>
+                <PenIcon />
+                Type a recipe
+              </button>
+            </div>
           )}
         </div>
       ) : (
@@ -145,7 +175,33 @@ const styles = {
     margin: '0.3rem 0 0 0',
     minHeight: '1em'
   },
+  headActions: { display: 'flex', gap: '0.6rem', flexWrap: 'wrap' },
+  emptyActions: {
+    display: 'flex',
+    gap: '0.6rem',
+    justifyContent: 'center',
+    flexWrap: 'wrap'
+  },
+  typeButton: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '0.5rem',
+    fontFamily: sans,
+    fontSize: '15px',
+    fontWeight: '600',
+    color: INK,
+    backgroundColor: 'transparent',
+    border: `1px solid ${INK}`,
+    borderRadius: '4px',
+    padding: '13px 18px',
+    minHeight: '46px',
+    cursor: 'pointer',
+    WebkitTapHighlightColor: 'transparent'
+  },
   newButton: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '0.5rem',
     fontFamily: sans,
     fontSize: '15px',
     fontWeight: '600',
@@ -238,6 +294,9 @@ const styles = {
     lineHeight: 1.5
   },
   emptyButton: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '0.5rem',
     fontFamily: sans,
     fontSize: '15px',
     fontWeight: '600',

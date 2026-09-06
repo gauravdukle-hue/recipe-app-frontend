@@ -14,6 +14,7 @@ export default function App() {
   const [loading, setLoading] = useState(true);
   const [userName, setUserName] = useState('');
   const [showWelcome, setShowWelcome] = useState(false);
+  const [createMode, setCreateMode] = useState('record');
 
   useEffect(() => {
     // Check if token exists in localStorage on mount
@@ -85,13 +86,13 @@ export default function App() {
       <div style={styles.content}>
         {screen === 'library' && (
           <RecipeLibrary 
-            onCreateClick={() => setScreen('create')}
+            onCreateClick={(mode) => { setCreateMode(mode); setScreen('create'); }}
             onSelectRecipe={handleSelectRecipe}
           />
         )}
 
         {screen === 'create' && (
-          <RecipeForm onBack={() => setScreen('library')} />
+          <RecipeForm mode={createMode} onBack={() => setScreen('library')} />
         )}
 
         {screen === 'detail' && selectedRecipeId && (

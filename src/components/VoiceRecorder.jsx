@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useWavRecorder } from '../hooks/useWavRecorder';
 import { LANGUAGES, DEFAULT_LANGUAGE } from '../languages';
 
-export default function VoiceRecorder({ onTranscript }) {
+export default function VoiceRecorder({ onTranscript, mode = 'record' }) {
   const [transcript, setTranscript] = useState('');
   const [language, setLanguage] = useState(DEFAULT_LANGUAGE);
   const [picking, setPicking] = useState(false);
@@ -24,6 +24,7 @@ export default function VoiceRecorder({ onTranscript }) {
 
   return (
     <div style={styles.container}>
+      {mode === 'type' && (
       <div style={styles.pageWrapper}>
         <svg style={styles.ruledPattern} xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
           <defs>
@@ -51,6 +52,15 @@ export default function VoiceRecorder({ onTranscript }) {
           style={styles.textarea}
         />
       </div>
+      )}
+
+      {mode === 'record' && status === 'idle' && (
+        <div style={styles.stage}>
+          <p style={styles.stageText}>
+            Tell the recipe the way you would tell it to someone in the kitchen.
+          </p>
+        </div>
+      )}
 
       {status === 'recording' && (
         <div style={styles.recordingBar}>
@@ -111,6 +121,7 @@ export default function VoiceRecorder({ onTranscript }) {
       {error && <div style={styles.error}>{error}</div>}
 
       <div style={styles.toolsBar}>
+        {mode === 'record' && (
         <button
           onClick={status === 'recording' ? stop : () => setPicking(true)}
           style={{
@@ -121,6 +132,7 @@ export default function VoiceRecorder({ onTranscript }) {
         >
           {status === 'recording' ? 'Stop' : status === 'ready' ? 'Record again' : 'Record'}
         </button>
+        )}
 
         <button
           onClick={handleSubmit}
@@ -139,6 +151,20 @@ export default function VoiceRecorder({ onTranscript }) {
 }
 
 const styles = {
+  stage: {
+    padding: '3rem 2rem',
+    textAlign: 'center'
+  },
+  stageText: {
+    fontFamily: "ui-serif, 'New York', 'Iowan Old Style', Georgia, serif",
+    fontSize: '19px',
+    lineHeight: 1.5,
+    color: '#7A756C',
+    margin: 0,
+    maxWidth: '30ch',
+    marginLeft: 'auto',
+    marginRight: 'auto'
+  },
   container: {
     maxWidth: '900px',
     margin: '0 auto',
