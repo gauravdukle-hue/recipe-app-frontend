@@ -72,7 +72,7 @@ export default function App() {
     <div style={styles.app}>
       <nav style={styles.navbar}>
         <h1 onClick={() => setScreen('library')} style={styles.logo}>
-          🍽️ Family Recipes
+          Family Recipes
         </h1>
         <div style={styles.navRight}>
           {userName && <span style={styles.greeting}>Hi, {userName.split(' ')[0]}</span>}
@@ -85,7 +85,6 @@ export default function App() {
       <div style={styles.content}>
         {screen === 'library' && (
           <RecipeLibrary 
-            userName={userName}
             onCreateClick={() => setScreen('create')}
             onSelectRecipe={handleSelectRecipe}
           />
@@ -107,42 +106,48 @@ export default function App() {
 }
 
 const styles = {
-  navRight: { display: 'flex', alignItems: 'center', gap: '0.9rem' },
-  greeting: { fontSize: '15px', color: '#555' },
+  navRight: { display: 'flex', alignItems: 'center', gap: '1rem' },
+  greeting: {
+    fontSize: '14px',
+    color: '#7A756C',
+    fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+  },
   app: { 
-    minHeight: '100vh', 
-    backgroundColor: '#fafafa',
+    minHeight: '100vh',
+    backgroundColor: '#FBFAF7',
     fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
   },
-  navbar: { 
-    backgroundColor: '#ffffff',
-    color: '#1d1d1d',
-    padding: '1rem 2rem', 
-    display: 'flex', 
-    justifyContent: 'space-between', 
+  navbar: {
+    backgroundColor: '#FBFAF7',
+    color: '#1B2A4A',
+    padding: '1.1rem 1.25rem',
+    display: 'flex',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    borderBottom: '1px solid #e5e5e5',
-    boxShadow: '0 1px 3px rgba(0,0,0,0.05)'
+    // Hairline instead of a shadow — the header sits on the page rather than
+    // floating above it.
+    borderBottom: '1px solid #E4DFD6'
   },
-  logo: { 
-    fontSize: '24px', 
-    cursor: 'pointer', 
+  logo: {
+    fontFamily: "ui-serif, 'New York', 'Iowan Old Style', Georgia, serif",
+    fontSize: '21px',
+    cursor: 'pointer',
     margin: 0,
     fontWeight: '600',
-    transition: 'opacity 0.2s'
+    color: '#1B2A4A',
+    letterSpacing: '-0.01em'
   },
-  logoutButton: { 
-    padding: '8px 16px', 
-    backgroundColor: '#ff3b30', 
-    color: 'white', 
-    border: 'none', 
-    borderRadius: '8px', 
-    cursor: 'pointer', 
-    fontSize: '14px', 
-    fontWeight: '500',
-    transition: 'all 0.2s'
+  logoutButton: {
+    // Logging out is not a destructive action, so it stops shouting in red.
+    padding: '8px 4px',
+    backgroundColor: 'transparent',
+    color: '#7A756C',
+    border: 'none',
+    cursor: 'pointer',
+    fontSize: '14px',
+    textDecoration: 'underline'
   },
-  content: { 
-    padding: '2rem'
+  content: {
+    padding: 0
   }
 };
