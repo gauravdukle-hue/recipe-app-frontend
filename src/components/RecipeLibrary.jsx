@@ -48,6 +48,15 @@ export default function RecipeLibrary({ onCreateClick, onSelectRecipe }) {
     fetchRecipes();
   }, [view]);
 
+  // While something is transcribing, refresh quietly so the badge clears
+  // itself. Nobody should have to reload to find out it finished.
+  useEffect(() => {
+    const waiting = recipes.some((r) => Number(r.audio_pending) > 0);
+    if (!waiting) return undefined;
+    const timer = setInterval(fetchRecipes, 15000);
+    return () => clearInterval(timer);
+  }, [recipes, view]);
+
   const fetchRecipes = async () => {
     try {
       setLoading(true);
@@ -121,6 +130,11 @@ export default function RecipeLibrary({ onCreateClick, onSelectRecipe }) {
                     recipe card, rather than decorating the tile. */}
                 <span style={styles.rule} />
                 <span style={styles.cardMeta}>{recipe.cuisine_tag || 'Recipe'}</span>
+                {Number(recipe.audio_pending) > 0 ? (
+                  <span style={{ ...styles.badge, ...styles.badgeWait }}>Transcribing…</span>
+                ) : Number(recipe.audio_failed) > 0 ? (
+                  <span style={{ ...styles.badge, ...styles.badgeBad }}>Needs attention</span>
+                ) : null}
                 {view !== 'mine' && recipe.owner_name && (
                   <span style={styles.cardBy}>{recipe.owner_name}</span>
                 )}
@@ -279,6 +293,15 @@ const styles = {
   },
   cardMeta: { fontFamily: sans, fontSize: '13px', color: MUTED },
   cardBy: { fontFamily: sans, fontSize: '13px', color: MUTED, marginTop: '2px' },
+  badge: {
+    fontFamily: sans,
+    fontSize: '12px',
+    marginTop: '8px',
+    padding: '3px 8px',
+    borderRadius: '3px'
+  },
+  badgeWait: { backgroundColor: '#EEF2F8', color: '#42557A' },
+  badgeBad: { backgroundColor: '#F6EAE6', color: KOKUM },
   quiet: { fontFamily: sans, fontSize: '15px', color: MUTED },
   empty: {
     border: `1px dashed ${HAIRLINE}`,

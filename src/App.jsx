@@ -8,8 +8,19 @@ import RecipeDetail from './components/RecipeDetail';
 import './App.css';
 
 export default function App() {
-  const [screen, setScreen] = useState('library');
-  const [selectedRecipeId, setSelectedRecipeId] = useState(null);
+  // The app had no routing, so refreshing a recipe threw you back to the
+  // library — exactly when you reload most, waiting on a transcription.
+  // The hash keeps your place and makes the browser Back button work.
+  const readHash = () => {
+    const m = (window.location.hash || '').match(/^#\/recipe\/(\d+)/);
+    if (m) return { screen: 'detail', id: Number(m[1]) };
+    if ((window.location.hash || '').startsWith('#/new')) return { screen: 'create', id: null };
+    return { screen: 'library', id: null };
+  };
+
+  const initial = readHash();
+  const [screen, setScreen] = useState(initial.screen);
+  const [selectedRecipeId, setSelectedRecipeId] = useState(initial.id);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [loading, setLoading] = useState(true);
   const [userName, setUserName] = useState('');
@@ -36,6 +47,7 @@ export default function App() {
   const handleLogout = () => {
     localStorage.removeItem('auth_token');
     setAuthToken(null);
+    window.location.hash = '';
     setIsLoggedIn(false);
     setScreen('library');
   };
@@ -52,7 +64,24 @@ export default function App() {
       .catch(() => setUserName(''));
   }, [isLoggedIn]);
 
+  useEffect(() => {
+    const onHash = () => {
+      const next = readHash();
+      setScreen(next.screen);
+      setSelectedRecipeId(next.id);
+    };
+    window.addEventListener('hashchange', onHash);
+    return () => window.removeEventListener('hashchange', onHash);
+  }, []);
+
+  const goLibrary = () => {
+    window.location.hash = '';
+    setSelectedRecipeId(null);
+    setScreen('library');
+  };
+
   const handleSelectRecipe = (recipeId) => {
+    window.location.hash = `#/recipe/${recipeId}`;
     setSelectedRecipeId(recipeId);
     setScreen('detail');
   };
@@ -86,19 +115,19 @@ export default function App() {
       <div style={styles.content}>
         {screen === 'library' && (
           <RecipeLibrary 
-            onCreateClick={(mode) => { setCreateMode(mode); setScreen('create'); }}
+            onCreateClick={(mode) => { setCreateMode(mode); window.location.hash = '#/new'; setScreen('create'); }}
             onSelectRecipe={handleSelectRecipe}
           />
         )}
 
         {screen === 'create' && (
-          <RecipeForm mode={createMode} onBack={() => setScreen('library')} />
+          <RecipeForm mode={createMode} onBack={goLibrary} />
         )}
 
         {screen === 'detail' && selectedRecipeId && (
           <RecipeDetail 
             recipe_id={selectedRecipeId}
-            onBack={() => setScreen('library')}
+            onBack={goLibrary}
           />
         )}
       </div>
