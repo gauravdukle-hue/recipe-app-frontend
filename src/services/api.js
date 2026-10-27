@@ -12,6 +12,24 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+// A dead token used to look like an empty library: App.jsx treats "a token
+// exists" as "signed in", so every call 401'd while the UI sat there showing
+// no recipes and no reason why. Rotating JWT_SECRET does this to everyone at
+// once. Clear the token and let the app fall back to the login screen.
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      localStorage.removeItem('auth_token');
+      // Not on the login call itself — a wrong password is the user's to see.
+      if (!error.config?.url?.includes('/auth/')) {
+        window.location.reload();
+      }
+    }
+    return Promise.reject(error);
+  }
+);
+
 export const setAuthToken = (token) => {
   if (token) {
     localStorage.setItem('auth_token', token);
