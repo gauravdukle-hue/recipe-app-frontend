@@ -57,7 +57,12 @@ export default function VoiceRecorder({ onTranscript, mode = 'record' }) {
       {mode === 'record' && status === 'idle' && (
         <div style={styles.stage}>
           <p style={styles.stageText}>
-            Tell the recipe the way you would tell it to someone in the kitchen.
+            Tell the recipe the way you would tell it in the kitchen — on your
+            own, or two of you talking it through.
+          </p>
+          <p style={styles.stageHint}>
+            If you are talking together, take turns. One voice at a time comes
+            out far better than two at once.
           </p>
         </div>
       )}
@@ -164,6 +169,13 @@ const styles = {
     maxWidth: '30ch',
     marginLeft: 'auto',
     marginRight: 'auto'
+  },
+  stageHint: {
+    fontSize: '15px',
+    lineHeight: 1.5,
+    color: '#A39D93',
+    margin: '1rem auto 0',
+    maxWidth: '32ch'
   },
   container: {
     maxWidth: '900px',
