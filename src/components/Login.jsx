@@ -95,7 +95,7 @@ export default function Login({ onLogin }) {
       <div style={styles.card}>
         <div style={styles.header}>
           <h1 style={styles.title}>🍽️</h1>
-          <h2 style={styles.heading}>Family Recipes</h2>
+          <h2 style={styles.heading}>Nita's Recipes</h2>
           <p style={styles.subtitle}>
             {isSignup ? 'Create your account' : 'Welcome back'}
           </p>

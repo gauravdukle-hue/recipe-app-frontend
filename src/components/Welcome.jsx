@@ -51,7 +51,7 @@ export default function Welcome({ name, onDone }) {
             {name.split(' ')[0]}
           </h1>
         )}
-        <p style={{ ...styles.sub, animationDelay: '420ms' }}>Family Recipes</p>
+        <p style={{ ...styles.sub, animationDelay: '420ms' }}>Nita's Recipes</p>
       </div>
     </div>
   );

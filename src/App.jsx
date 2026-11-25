@@ -114,7 +114,7 @@ export default function App() {
     <div style={styles.app}>
       <nav style={styles.navbar}>
         <h1 onClick={() => setScreen('library')} style={styles.logo}>
-          Family Recipes
+          Nita's Recipes
         </h1>
         <div style={styles.navRight}>
           {userName && <span style={styles.greeting}>Hi, {userName.split(' ')[0]}</span>}
