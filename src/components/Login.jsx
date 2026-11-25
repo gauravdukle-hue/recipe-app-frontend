@@ -83,7 +83,7 @@ export default function Login({ onLogin }) {
       setAuthToken(token);
       onLogin();
     } catch (err) {
-      setError(err.response?.data?.error || 'Something went wrong');
+      setError(err.response?.data?.details || err.response?.data?.error || 'Something went wrong');
       console.error('Login error:', err);
     } finally {
       setLoading(false);
@@ -230,7 +230,8 @@ const styles = {
     fontFamily: 'inherit',
     transition: 'all 0.2s',
     outline: 'none',
-    backgroundColor: '#fafafa'
+    backgroundColor: '#fafafa',
+    color: '#1a1a1a'
   },
   button: {
     padding: '12px',
